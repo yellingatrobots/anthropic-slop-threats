@@ -3,473 +3,609 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Yelling At Robots — Threat Report Topic Picker</title>
+  <title>★☆ YELLING AT ROBOTS ~ THREAT INTEL SPIN-O-RAMA ☆★</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
-
-    :root {
-      --bg: #111118;
-      --surface: #1a1a24;
-      --surface-2: #222230;
-      --surface-3: #2d2d3d;
-      --text: #e8e8ee;
-      --text-dim: #8888a0;
-      --text-faint: #555566;
-      --accent: #e54b4b;
-      --accent-2: #f0a030;
-      --accent-3: #4db8a0;
-      --accent-4: #7c6fae;
-      --border: #2a2a3a;
-      --border-light: #3a3a50;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    /* GeoCities-core */
+    html, body {
+      margin: 0; padding: 0;
+      background: #000 url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23000" width="100" height="100"/><circle cx="20" cy="30" r="1" fill="%23fff" opacity="0.6"/><circle cx="70" cy="10" r="1.5" fill="%23fff" opacity="0.4"/><circle cx="50" cy="60" r="1" fill="%23fff" opacity="0.7"/><circle cx="85" cy="80" r="1" fill="%23fff" opacity="0.5"/><circle cx="10" cy="85" r="1.2" fill="%23fff" opacity="0.3"/><circle cx="35" cy="15" r="1" fill="%23fff" opacity="0.8"/><circle cx="90" cy="45" r="1" fill="%23fff" opacity="0.4"/><circle cx="55" cy="90" r="1.5" fill="%23fff" opacity="0.6"/></svg>');
+      color: #00ff00;
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive, sans-serif;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2.5rem 1.25rem;
-      line-height: 1.5;
     }
 
+    /* Rainbow text keyframes */
+    @keyframes rainbow {
+      0% { color: #ff0000; }
+      16% { color: #ff9900; }
+      33% { color: #ffff00; }
+      50% { color: #00ff00; }
+      66% { color: #00ffff; }
+      83% { color: #ff00ff; }
+      100% { color: #ff0000; }
+    }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    @keyframes spin-glow {
+      0% { text-shadow: 0 0 5px #ff0000; }
+      25% { text-shadow: 0 0 10px #ffff00; }
+      50% { text-shadow: 0 0 15px #00ff00; }
+      75% { text-shadow: 0 0 10px #00ffff; }
+      100% { text-shadow: 0 0 5px #ff00ff; }
+    }
+
+    @keyframes flame {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    /* Guestbook / Netscape badge row */
+    .badge-row {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .badge {
+      background: #000080;
+      color: #fff;
+      border: 2px outset #c0c0c0;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.65rem;
+      font-family: 'Courier New', monospace;
+      text-decoration: none;
+    }
+    .badge:hover { background: #0000ff; }
+    .badge.blink { animation: blink 1s step-end infinite; }
+
+    /* Header */
     .header {
       text-align: center;
-      margin-bottom: 2.5rem;
-      max-width: 640px;
+      margin-bottom: 1.5rem;
+      border: 4px ridge #ff00ff;
+      padding: 1rem;
+      background: rgba(0,0,0,0.7);
     }
 
     .header h1 {
-      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
       font-weight: 900;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 50%, var(--accent-3) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
       text-transform: uppercase;
-      margin-bottom: 0.75rem;
+      animation: rainbow 2s linear infinite;
+      text-shadow: 2px 2px 0 #000, 0 0 10px currentColor;
+      margin: 0 0 0.5rem 0;
+      letter-spacing: 1px;
     }
 
     .header .tagline {
-      font-family: 'Space Mono', monospace;
-      color: var(--text-dim);
-      font-size: 0.9rem;
-      margin-top: 0.75rem;
-      line-height: 1.5;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #00ffff;
+      line-height: 1.4;
     }
 
     .header .tagline .highlight {
-      color: var(--accent-2);
-      font-weight: 700;
+      color: #ffff00;
+      font-weight: bold;
+      text-decoration: underline wavy #ff00ff;
     }
 
+    /* Marquee */
+    .marquee-wrap {
+      overflow: hidden;
+      white-space: nowrap;
+      background: #000080;
+      border: 2px inset #808080;
+      padding: 0.25rem 0;
+      margin-bottom: 1rem;
+    }
+    .marquee {
+      display: inline-block;
+      animation: marquee 12s linear infinite;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: #ffff00;
+    }
+
+    /* Under construction divider */
+    .divider {
+      height: 8px;
+      background: linear-gradient(90deg, #ff0000, #ff9900, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+      background-size: 200% 100%;
+      animation: flame 3s linear infinite;
+      border: none;
+      margin: 1rem 0;
+    }
+
+    /* Stage box */
     .stage {
-      width: 100%;
-      max-width: 680px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-      position: relative;
+      border: 5px ridge #00ffff;
+      padding: 1rem;
+      background: rgba(0,0,64,0.85);
+      margin-bottom: 1.5rem;
     }
 
+    .stage-title {
+      font-size: 1.1rem;
+      color: #ff00ff;
+      text-align: center;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 8px #ff00ff;
+      border-bottom: 2px dotted #ff00ff;
+      padding-bottom: 0.5rem;
+    }
+
+    /* Reels */
     .reel-container {
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
     }
 
     .reel {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
+      border: 3px inset #c0c0c0;
+      background: #000040;
+      padding: 0.75rem 1rem;
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
-      position: relative;
-      overflow: hidden;
-      min-height: 72px;
+      min-height: 64px;
       justify-content: center;
     }
 
     .reel-label {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.6rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--text-faint);
+      color: #00ffff;
+      letter-spacing: 2px;
     }
 
     .reel-value {
-      font-size: 1.15rem;
-      font-weight: 700;
+      font-size: 1.05rem;
+      font-weight: bold;
+      color: #00ff00;
       transition: color 0.08s ease;
-      line-height: 1.3;
+      font-family: 'Comic Sans MS', cursive;
     }
 
     .reel.spinning .reel-value {
-      color: var(--accent-3);
+      color: #ffff00;
+      animation: spin-glow 0.3s linear infinite;
     }
 
     .reel.locked .reel-value {
-      color: var(--accent-2);
+      color: #ff9900;
+      text-shadow: 0 0 10px #ff9900;
     }
 
     .reel.final .reel-value {
-      color: var(--text);
+      color: #00ff00;
+      text-shadow: 0 0 15px #00ff00;
     }
 
+    /* Spin button - 3D beveled */
     .spin-btn {
       width: 100%;
-      padding: 1rem 1.5rem;
-      font-size: 1.1rem;
-      font-weight: 800;
-      letter-spacing: -0.01em;
-      border: none;
-      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      font-family: 'Comic Sans MS', cursive;
+      border: 3px outset #c0c0c0;
       cursor: pointer;
-      background: var(--accent);
-      color: white;
-      transition: all 0.15s ease;
-      font-family: 'Inter', sans-serif;
-      position: relative;
-      overflow: hidden;
+      background: linear-gradient(to bottom, #ff0000, #990000);
+      color: #fff;
+      text-shadow: 1px 1px 0 #000;
+      margin-bottom: 0.5rem;
     }
 
     .spin-btn:hover:not(:disabled) {
-      background: #ff5a5a;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 20px rgba(229, 75, 75, 0.25);
+      background: linear-gradient(to bottom, #ff3333, #cc0000);
     }
 
     .spin-btn:active:not(:disabled) {
-      transform: translateY(0);
+      border-style: inset;
     }
 
     .spin-btn:disabled {
-      opacity: 0.5;
+      opacity: 0.6;
       cursor: not-allowed;
+      filter: grayscale(0.5);
     }
 
+    /* Result */
     .result {
-      margin-top: 1.5rem;
-      padding: 1.5rem;
-      background: var(--surface-2);
-      border: 1px solid var(--border-light);
-      border-radius: 12px;
+      margin-top: 1rem;
+      padding: 1rem;
+      border: 4px ridge #ff00ff;
+      background: rgba(64,0,64,0.85);
       display: none;
       animation: fadeIn 0.35s ease;
     }
 
-    .result.visible {
-      display: block;
-    }
+    .result.visible { display: block; }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .result-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
       margin-bottom: 0.75rem;
     }
 
     .result-category {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.6rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.15em;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      background: rgba(229, 75, 75, 0.12);
-      color: var(--accent);
+      letter-spacing: 2px;
+      color: #00ffff;
+      border: 1px solid #00ffff;
+      padding: 0.15rem 0.4rem;
+      display: inline-block;
     }
 
     .result-title {
-      font-size: 1.25rem;
-      font-weight: 800;
-      line-height: 1.25;
+      font-size: 1.1rem;
+      font-weight: bold;
       margin-bottom: 0.5rem;
-      letter-spacing: -0.02em;
+      color: #ffff00;
+      text-shadow: 0 0 8px #ffff00;
+      font-family: 'Comic Sans MS', cursive;
     }
 
     .result-link {
       display: inline-block;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-dim);
-      text-decoration: none;
-      border: 1px solid var(--border);
-      padding: 0.35rem 0.7rem;
-      border-radius: 4px;
-      margin-bottom: 1rem;
-      transition: all 0.15s ease;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: #00ffff;
+      text-decoration: underline;
+      margin-bottom: 0.75rem;
+      border: 2px outset #c0c0c0;
+      padding: 0.2rem 0.5rem;
+      background: #000080;
     }
 
     .result-link:hover {
-      border-color: var(--text-dim);
-      color: var(--text);
+      background: #0000ff;
+      color: #fff;
     }
 
     .tldr-box {
-      background: var(--surface-3);
-      padding: 1.25rem;
-      border-radius: 8px;
-      border-left: 3px solid var(--accent-3);
+      border: 3px inset #c0c0c0;
+      padding: 0.75rem;
+      background: #000020;
+      margin-bottom: 0.75rem;
     }
 
     .tldr-label {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.6rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--accent-3);
-      margin-bottom: 0.5rem;
-      font-weight: 700;
+      color: #00ff00;
+      margin-bottom: 0.4rem;
+      letter-spacing: 1px;
     }
 
     .tldr-text {
-      font-size: 0.95rem;
-      line-height: 1.65;
-      color: var(--text);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #e0e0e0;
+      font-family: 'Comic Sans MS', cursive;
     }
 
     .tldr-bylines {
-      margin-top: 0.75rem;
-      padding-top: 0.75rem;
-      border-top: 1px dashed var(--border);
-      font-size: 0.82rem;
-      color: var(--text-dim);
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px dashed #ff00ff;
+      font-size: 0.8rem;
+      color: #ff9900;
       font-style: italic;
-      line-height: 1.5;
+      font-family: 'Courier New', monospace;
     }
 
     .slop-box {
-      margin-top: 1rem;
-      background: var(--surface);
-      padding: 1.25rem;
-      border-radius: 8px;
-      border-left: 3px solid var(--accent-2);
+      border: 3px inset #c0c0c0;
+      padding: 0.75rem;
+      background: #200020;
+      margin-bottom: 0.75rem;
     }
 
     .slop-label {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.6rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--accent-2);
-      margin-bottom: 0.5rem;
-      font-weight: 700;
+      color: #ff00ff;
+      margin-bottom: 0.4rem;
+      letter-spacing: 1px;
     }
 
     .slop-text {
-      font-size: 0.9rem;
-      line-height: 1.6;
-      color: var(--text-dim);
-      font-style: italic;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      color: #ffccff;
+      font-family: 'Comic Sans MS', cursive;
     }
 
     .meta {
-      margin-top: 1rem;
+      margin-top: 0.75rem;
       display: flex;
-      gap: 0.5rem;
+      gap: 0.4rem;
       flex-wrap: wrap;
     }
 
     .meta-tag {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.6rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.65rem;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: var(--surface-3);
-      border: 1px solid var(--border);
-      padding: 0.3rem 0.6rem;
-      border-radius: 4px;
-      color: var(--text-dim);
+      background: #000080;
+      border: 1px outset #c0c0c0;
+      padding: 0.2rem 0.4rem;
+      color: #00ffff;
     }
 
     .reset-btn {
-      margin-top: 1.25rem;
-      padding: 0.6rem 1.25rem;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-dim);
-      border-radius: 8px;
+      margin-top: 0.75rem;
+      padding: 0.5rem 1rem;
+      font-family: 'Comic Sans MS', cursive;
+      font-size: 0.9rem;
+      border: 3px outset #c0c0c0;
+      background: linear-gradient(to bottom, #808080, #404040);
+      color: #fff;
       cursor: pointer;
-      transition: all 0.15s ease;
     }
 
     .reset-btn:hover {
-      border-color: var(--text-dim);
-      color: var(--text);
+      background: linear-gradient(to bottom, #999, #555);
     }
 
+    .reset-btn:active {
+      border-style: inset;
+    }
+
+    /* History */
     .history {
-      margin-top: 2.5rem;
-      max-width: 680px;
-      width: 100%;
+      margin-top: 1.5rem;
     }
 
     .history-title {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.6rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
       text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: var(--text-faint);
-      margin-bottom: 0.75rem;
+      color: #ff00ff;
+      margin-bottom: 0.5rem;
+      letter-spacing: 2px;
+      border-bottom: 2px dotted #ff00ff;
+      padding-bottom: 0.25rem;
     }
 
     .history-item {
-      padding: 0.85rem 1rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
-      font-size: 0.85rem;
+      padding: 0.5rem 0.75rem;
+      border: 2px inset #c0c0c0;
+      background: #000040;
+      margin-bottom: 0.4rem;
+      font-size: 0.8rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 1rem;
+      gap: 0.5rem;
     }
 
     .history-item .hist-cat {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.6rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.65rem;
+      color: #ff9900;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-faint);
       flex-shrink: 0;
     }
 
     .history-item .hist-topic {
       flex: 1;
-      font-weight: 600;
-      line-height: 1.35;
-      color: var(--text);
+      font-weight: bold;
+      color: #00ff00;
       cursor: pointer;
+      font-family: 'Comic Sans MS', cursive;
+      font-size: 0.85rem;
     }
 
     .history-item .hist-topic:hover {
-      color: var(--accent-2);
+      color: #ffff00;
+      text-decoration: underline;
     }
 
     .history-item .hist-link {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.65rem;
-      color: var(--text-faint);
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem;
+      color: #00ffff;
       text-decoration: none;
-      margin-left: 0.5rem;
+      border: 1px outset #c0c0c0;
+      padding: 0.1rem 0.3rem;
+      background: #000080;
       flex-shrink: 0;
     }
 
     .history-item .hist-link:hover {
-      color: var(--text);
+      background: #0000ff;
+      color: #fff;
     }
 
+    /* Visitor counter */
+    .visitor-counter {
+      text-align: center;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: #00ff00;
+      margin-top: 1rem;
+    }
+
+    .counter-digits {
+      font-family: 'Courier New', monospace;
+      font-size: 1.2rem;
+      color: #00ff00;
+      background: #000;
+      border: 2px inset #c0c0c0;
+      padding: 0.2rem 0.5rem;
+      letter-spacing: 4px;
+      display: inline-block;
+    }
+
+    /* Confetti (now falling ASCII) */
     .confetti {
       position: fixed;
       pointer-events: none;
       z-index: 9999;
+      font-family: monospace;
+      font-weight: bold;
+      font-size: 1.2rem;
     }
 
-    .confetti-piece {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      animation: confettiFall 1.4s ease-out forwards;
+    /* Footer guestbook */
+    .footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border: 3px ridge #ff9900;
+      background: rgba(0,0,0,0.8);
     }
 
-    @keyframes confettiFall {
-      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(160px) rotate(540deg); opacity: 0; }
+    .footer a {
+      color: #00ffff;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
     }
+
+    .footer .webring {
+      margin-top: 0.5rem;
+      font-size: 0.65rem;
+      color: #ff00ff;
+      font-family: 'Courier New', monospace;
+    }
+
+    .blink { animation: blink 1s step-end infinite; }
 
     @media (max-width: 520px) {
-      body { padding: 1.5rem 1rem; }
-      .stage { padding: 1.25rem; }
-      .reel { padding: 1rem 1.25rem; min-height: 64px; }
-      .reel-value { font-size: 1rem; }
-      .result { padding: 1rem; }
-      .result-title { font-size: 1.1rem; }
-      .tldr-box { padding: 1rem; }
-      .slop-box { padding: 1rem; }
+      .container { padding: 0.5rem; }
+      .stage { padding: 0.75rem; }
+      .reel { padding: 0.5rem 0.75rem; min-height: 56px; }
+      .reel-value { font-size: 0.9rem; }
+      .result { padding: 0.75rem; }
+      .result-title { font-size: 1rem; }
+      .tldr-box, .slop-box { padding: 0.5rem; }
+      .history-item { padding: 0.4rem 0.5rem; }
     }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>Threat Intelligence Spin-O-Rama</h1>
-    <div class="tagline">
-      Because reading <span class="highlight">200 pages</span> of Anthropic's September 2026 threat report is a lot of work,<br>
-      and JR and The Foz need a gimmick to pick their weekly dose of doom.
-    </div>
-  </div>
+  <div class="container">
 
-  <div class="stage">
-    <div class="reel-container">
-      <div class="reel" id="categoryReel">
-        <span class="reel-label">Harm Area</span>
-        <span class="reel-value" id="categoryValue">Press spin, cowards</span>
-      </div>
-      <div class="reel" id="topicReel">
-        <span class="reel-label">Case Study</span>
-        <span class="reel-value" id="topicValue">???</span>
+    <div class="badge-row">
+      <span class="badge">Best viewed in Netscape 4.0</span>
+      <span class="badge blink">UNDER CONSTRUCTION</span>
+      <a class="badge" href="https://yellingatrobots.com/" target="_blank">Sign My Guestbook!</a>
+    </div>
+
+    <div class="header">
+      <h1>★ Threat Intelligence Spin-O-Rama ★</h1>
+      <div class="tagline">
+        Because reading <span class="highlight">200 pages</span> of Anthropic's September 2026 threat report is a lot of work, and JR and The Foz need a gimmick to pick their weekly dose of doom.
       </div>
     </div>
 
-    <button class="spin-btn" id="spinBtn" onclick="spin()">Spin the Wheel</button>
-
-    <div class="result" id="result">
-      <div class="result-header">
-        <span class="result-category" id="resultCategory"></span>
-      </div>
-      <div class="result-title" id="resultTitle"></div>
-      <a class="result-link" id="resultLink" href="#" target="_blank" rel="noopener noreferrer">Read report ↗</a>
-      <div class="tldr-box">
-        <div class="tldr-label">TL;DR (goldfish edition)</div>
-        <div class="tldr-text" id="tldrText"></div>
-        <div class="tldr-bylines" id="tldrByline"></div>
-      </div>
-      <div class="slop-box">
-        <div class="slop-label">AI Slop Title Card Prompt</div>
-        <div class="slop-text" id="slopText"></div>
-      </div>
-      <div class="meta" id="metaTags"></div>
-      <button class="reset-btn" onclick="resetStage()">Spin Again</button>
+    <div class="marquee-wrap">
+      <span class="marquee">+++ WELCOME TO THE SPIN-O-RAMA +++ PRESS THE BUTTON COWARD +++ NO JAVA REQUIRED (BUT JS IS) +++ YELLING AT ROBOTS DOT COM +++</span>
     </div>
-  </div>
 
-  <div class="history" id="history" style="display:none;">
-    <div class="history-title">Previous Spins (immutable, like your browser history)</div>
-    <div id="historyList"></div>
+    <div class="stage">
+      <div class="stage-title">~ The Wheel of Misfortune ~</div>
+
+      <div class="reel-container">
+        <div class="reel" id="categoryReel">
+          <span class="reel-label">Harm Area</span>
+          <span class="reel-value" id="categoryValue">Press spin, cowards</span>
+        </div>
+        <div class="reel" id="topicReel">
+          <span class="reel-label">Case Study</span>
+          <span class="reel-value" id="topicValue">???</span>
+        </div>
+      </div>
+
+      <button class="spin-btn" id="spinBtn" onclick="spin()">SPIN THE WHEEL</button>
+
+      <div class="result" id="result">
+        <div class="result-header">
+          <span class="result-category" id="resultCategory"></span>
+        </div>
+        <div class="result-title" id="resultTitle"></div>
+        <a class="result-link" id="resultLink" href="#" target="_blank" rel="noopener noreferrer">Read report [NEW WINDOW]</a>
+        <div class="tldr-box">
+          <div class="tldr-label">TL;DR (goldfish edition)</div>
+          <div class="tldr-text" id="tldrText"></div>
+          <div class="tldr-bylines" id="tldrByline"></div>
+        </div>
+        <div class="slop-box">
+          <div class="slop-label">AI Slop Title Card Prompt</div>
+          <div class="slop-text" id="slopText"></div>
+        </div>
+        <div class="meta" id="metaTags"></div>
+        <button class="reset-btn" onclick="resetStage()">Spin Again</button>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="history" id="history" style="display:none;">
+      <div class="history-title">Previous Spins (immutable, like your browser history)</div>
+      <div id="historyList"></div>
+    </div>
+
+    <div class="visitor-counter">
+      You are visitor number:
+      <div class="counter-digits" id="visitorCount">000042</div>
+    </div>
+
+    <div class="footer">
+      <a href="https://yellingatrobots.com/" target="_blank">Yelling At Robots</a>
+      <div class="webring">
+        [ <a href="#">&lt;&lt; Prev</a> :: <span class="blink">YAR Webring</span> :: <a href="#">Next &gt;&gt;</a> ]
+      </div>
+    </div>
+
   </div>
 
   <script>
+    // Fake visitor counter
+    const counterEl = document.getElementById('visitorCount');
+    let counter = 42;
+    setInterval(() => {
+      counter += Math.floor(Math.random() * 3);
+      counterEl.textContent = String(counter).padStart(6, '0');
+    }, 4000);
+
     const BASE_URL = 'https://www.anthropic.com/threat-intelligence-report-september-2026';
 
     const data = [
       {
         category: "Cyber Operations",
-        color: "#e54b4b",
+        color: "#ff0000",
         topics: [
           {
             title: "GTG-20006: Russian Espionage (Midnight Blizzard)",
@@ -517,7 +653,7 @@
       },
       {
         category: "Surveillance Operations",
-        color: "#7c6fae",
+        color: "#ff00ff",
         topics: [
           {
             title: "GTG-14010: Uyghur Recruitment in Syria",
@@ -593,7 +729,7 @@
       },
       {
         category: "Influence Operations",
-        color: "#4db8a0",
+        color: "#00ff00",
         topics: [
           {
             title: "GTG-04001: Russian FIMI in the Central African Republic",
@@ -662,7 +798,7 @@
       },
       {
         category: "Conventional Weapons",
-        color: "#f0a030",
+        color: "#ff9900",
         topics: [
           {
             title: "GTG-87001: Yemen Guided Weapons Engineering Cell",
@@ -710,7 +846,7 @@
       },
       {
         category: "Biological Misuse",
-        color: "#4db8a0",
+        color: "#00ffff",
         topics: [
           {
             title: "Case 1: Chikungunya Gain-of-Function Evasion Platform",
@@ -751,7 +887,7 @@
       },
       {
         category: "Scams and Fraud",
-        color: "#e54b4b",
+        color: "#ff0000",
         topics: [
           {
             title: "GTG-15001: Deceptive Dating App Network",
@@ -764,7 +900,7 @@
       },
       {
         category: "Illicit Distillation",
-        color: "#7c6fae",
+        color: "#ff00ff",
         topics: [
           {
             title: "GTG-16005: Alibaba/Qwen Chain-of-Thought Extraction",
@@ -899,9 +1035,8 @@
 
     function renderResult(cat, topic) {
       document.getElementById('resultCategory').textContent = cat.category;
-      document.getElementById('resultCategory').style.background = cat.color + '18';
+      document.getElementById('resultCategory').style.borderColor = cat.color;
       document.getElementById('resultCategory').style.color = cat.color;
-      document.getElementById('resultCategory').style.border = '1px solid ' + cat.color + '40';
       document.getElementById('resultTitle').textContent = topic.title;
       document.getElementById('resultTitle').style.color = cat.color;
 
@@ -919,14 +1054,14 @@
         span.className = 'meta-tag';
         span.textContent = tag;
         if (i === 0) {
-          span.style.borderColor = cat.color + '50';
+          span.style.borderColor = cat.color;
           span.style.color = cat.color;
         }
         meta.appendChild(span);
       });
 
       document.getElementById('result').classList.add('visible');
-      document.getElementById('spinBtn').textContent = 'Spin Again';
+      document.getElementById('spinBtn').textContent = 'SPIN AGAIN';
     }
 
     function resetStage() {
@@ -935,7 +1070,7 @@
       document.getElementById('topicValue').textContent = '???';
       document.getElementById('categoryReel').classList.remove('locked', 'final');
       document.getElementById('topicReel').classList.remove('locked', 'final');
-      document.getElementById('spinBtn').textContent = 'Spin the Wheel';
+      document.getElementById('spinBtn').textContent = 'SPIN THE WHEEL';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -954,7 +1089,7 @@
       history.forEach((h, idx) => {
         const div = document.createElement('div');
         div.className = 'history-item';
-        div.innerHTML = `<span class="hist-cat" style="color:${h.catObj.color}">${h.catObj.category}</span><span class="hist-topic" data-idx="${idx}">${h.topicObj.title}</span><a class="hist-link" href="${BASE_URL + h.topicObj.url}" target="_blank" rel="noopener noreferrer">↗</a>`;
+        div.innerHTML = `<span class="hist-cat" style="color:${h.catObj.color}">${h.catObj.category}</span><span class="hist-topic" data-idx="${idx}">${h.topicObj.title}</span><a class="hist-link" href="${BASE_URL + h.topicObj.url}" target="_blank" rel="noopener noreferrer">[LINK]</a>`;
         listEl.appendChild(div);
       });
 
@@ -978,21 +1113,23 @@
     }
 
     function fireConfetti() {
-      const colors = ['#e54b4b', '#f0a030', '#4db8a0', '#7c6fae', '#e8e8ee'];
+      const chars = ['★', '☆', '♦', '♠', '♣', '♥', '+', '*'];
+      const colors = ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#ff00ff', '#ff9900'];
       const container = document.createElement('div');
       container.className = 'confetti';
       const rect = document.getElementById('spinBtn').getBoundingClientRect();
       container.style.left = (rect.left + rect.width / 2 - 100) + 'px';
       container.style.top = (rect.top - 40) + 'px';
 
-      for (let i = 0; i < 24; i++) {
+      for (let i = 0; i < 20; i++) {
         const piece = document.createElement('div');
-        piece.className = 'confetti-piece';
-        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.textContent = chars[Math.floor(Math.random() * chars.length)];
+        piece.style.position = 'absolute';
+        piece.style.color = colors[Math.floor(Math.random() * colors.length)];
         piece.style.left = Math.random() * 200 + 'px';
         piece.style.top = '0px';
+        piece.style.animation = `confettiFall ${0.8 + Math.random() * 0.8}s ease-out forwards`;
         piece.style.animationDelay = (Math.random() * 0.25) + 's';
-        piece.style.animationDuration = (0.9 + Math.random() * 0.6) + 's';
         container.appendChild(piece);
       }
 
@@ -1000,5 +1137,13 @@
       setTimeout(() => container.remove(), 2200);
     }
   </script>
+
+  <style>
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(160px) rotate(720deg); opacity: 0; }
+    }
+  </style>
+
 </body>
 </html>
