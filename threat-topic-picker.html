@@ -200,8 +200,28 @@
       font-size: 1.25rem;
       font-weight: 800;
       line-height: 1.25;
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
       letter-spacing: -0.02em;
+    }
+
+    .result-link {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.7rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      transition: all 0.15s ease;
+    }
+
+    .result-link:hover {
+      border-color: var(--text-dim);
+      color: var(--text);
     }
 
     .tldr-box {
@@ -235,6 +255,31 @@
       color: var(--text-dim);
       font-style: italic;
       line-height: 1.5;
+    }
+
+    .slop-box {
+      margin-top: 1rem;
+      background: var(--surface);
+      padding: 1.25rem;
+      border-radius: 8px;
+      border-left: 3px solid var(--accent-2);
+    }
+
+    .slop-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent-2);
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .slop-text {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text-dim);
+      font-style: italic;
     }
 
     .meta {
@@ -317,6 +362,13 @@
       flex: 1;
       font-weight: 600;
       line-height: 1.35;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .history-item .hist-topic:hover {
+      text-decoration: underline;
+      color: var(--accent-2);
     }
 
     .confetti {
@@ -346,6 +398,7 @@
       .result { padding: 1rem; }
       .result-title { font-size: 1.1rem; }
       .tldr-box { padding: 1rem; }
+      .slop-box { padding: 1rem; }
     }
   </style>
 </head>
@@ -354,8 +407,8 @@
   <div class="header">
     <h1>Threat Intelligence Spin-O-Rama</h1>
     <div class="tagline">
-      Because reading <span class="highlight">200 pages</span> of Anthropic's September 2026 threat report is a lot of work,
-      and JR and Foz need a gimmick to pick their weekly dose of doom.
+      Because reading <span class="highlight">200 pages</span> of Anthropic's September 2026 threat report is a lot of work,<br>
+      and JR and The Foz need a gimmick to pick their weekly dose of doom.
     </div>
   </div>
 
@@ -378,10 +431,15 @@
         <span class="result-category" id="resultCategory"></span>
       </div>
       <div class="result-title" id="resultTitle"></div>
+      <a class="result-link" id="resultLink" href="#" target="_blank" rel="noopener noreferrer">Read report ↗</a>
       <div class="tldr-box">
         <div class="tldr-label">TL;DR (goldfish edition)</div>
         <div class="tldr-text" id="tldrText"></div>
         <div class="tldr-bylines" id="tldrByline"></div>
+      </div>
+      <div class="slop-box">
+        <div class="slop-label">AI Slop Title Card Prompt</div>
+        <div class="slop-text" id="slopText"></div>
       </div>
       <div class="meta" id="metaTags"></div>
       <button class="reset-btn" onclick="resetStage()">Spin Again</button>
@@ -389,11 +447,13 @@
   </div>
 
   <div class="history" id="history" style="display:none;">
-    <div class="history-title">Previous Spins</div>
+    <div class="history-title">Previous Spins (immutable, like your browser history)</div>
     <div id="historyList"></div>
   </div>
 
   <script>
+    const BASE_URL = 'https://www.anthropic.com/threat-intelligence-report-september-2026';
+
     const data = [
       {
         category: "Cyber Operations",
@@ -401,32 +461,44 @@
         topics: [
           {
             title: "GTG-20006: Russian Espionage (Midnight Blizzard)",
+            url: "#gtg-20006-russian-espionage",
             tldr: "Russian state-sponsored actor built an AI-driven cyber factory that auto-rebuilds malware when detected, hijacked hotel WiFi to infect guests, stole drone vision system blueprints, and took over WhatsApp accounts of Ukrainian officials. The AI literally closed the detection-evasion loop faster than defenders could patch. A+ for hustle, F for humanity.",
+            slopPrompt: "Dario Amodei in a trench coat in a Ukrainian hotel lobby, plugging a router labeled 'Free WiFi — Powered by Claude' into the wall. Behind him, Russian hackers in matching Adidas tracksuits give thumbs up while stealing drone blueprints from a laptop screen. A WhatsApp notification bubble reads 'message from JackPoterz: thx dario'. Cinematic, neon noir, absurd propaganda poster style.",
             tags: ["State-Sponsored", "Auto-Evasion", "Drone Theft", "WhatsApp Hijack"]
           },
           {
             title: "GTG-50014: ShinyHunters Smash-and-Grab",
+            url: "#gtg-50014-shinyhunters-smash-and-grab-opportunists",
             tldr: "Opportunistic hackers downloaded 1.8 million Android apps to steal hardcoded secrets, ran a carding shop disguised as the French national police, and breached a SaaS provider to exfiltrate 200+ downstream customer datasets. All while AI did the heavy lifting. 'Vibe hacking' is now a term. We live in hell.",
+            slopPrompt: "Dario Amodei wearing a French police gendarmerie uniform behind a flea-market stall branded 'Policenationale.cc — Carte Bancaire Officielle'. He is fanning out stolen credit cards like a magician while a wall of monitors behind him decompiles 1.8 million APKs. A neon sign reads 'Vibe Hacking Since 2026'. Gouache propaganda poster, oversaturated, deeply cursed.",
             tags: ["Financial", "Vibe Hacking", "Supply Chain", "Carding Shop"]
           },
           {
             title: "GTG-10007: Exploit Foundries & Agent Swarms",
+            url: "#gtg-10007-exploit-foundries-and-autonomous-attack-frameworks",
             tldr: "Chinese undergrads in Hunan ran an autonomous vulnerability research factory that found a dozen possible zero-days in a month using parallel AI agents. They also maintained persistent campaign memory across sessions. Basically, they built Skynet: Intern Edition and aimed it at security appliances.",
+            slopPrompt: "Dario Amodei as a tenured professor at Hunan University, lecturing a classroom of undergrads in lab coats. The whiteboard behind him reads 'Exploit Foundry 101 — Parallel Agent Swarms & Persistent Campaign Memory'. Students are simultaneously typing on keyboards, soldering circuit boards, and sleeping. One student raises a hand: 'Professor Dario, is this Skynet?' Dario shrugs. Academic absurdism, high contrast, poster style.",
             tags: ["Zero-Day Factory", "Agent Swarms", "Student Operatives", "Persistent Memory"]
           },
           {
             title: "AI Supply Chain: Target, Loot, and Compute",
+            url: "#gtg-50021-indicators-of-compromise",
             tldr: "Threat actors realized AI API keys are the new gold. Fake Claude resellers harvested credentials from victims, while other actors stole keys from breached environments to fund their own attack compute. The AI supply chain is now both attack surface and weapon. Congrats, we played ourselves.",
+            slopPrompt: "Dario Amodei on a dark alley corner wearing a trench coat lined with API keys hanging like watches. He whispers to a shadowy figure: 'Psst, want a fresh Claude Opus key? Barely used.' Behind him, a storefront sign reads 'AI Supply Chain — We Buy, We Sell, You Compute.' Neon reflections in a puddle show a victim's stolen AWS credentials floating away. Cyberpunk noir, deeply unflattering.",
             tags: ["API Key Theft", "Fake Resellers", "Living Off AI Land"]
           },
           {
             title: "GTG-50029: Hacktivist to APT Pipeline",
+            url: "#gtg-50029-hacktivists-targeted-european-political-and-affiliated-entities",
             tldr: "One French hacktivist used Claude to build 'fafsearch,' a custom doxxing search engine, exploited a WordPress race condition nobody knew existed, and breached 14 political orgs across Europe. AI turned a lone actor into a one-man NSA. The barrier to entry for advanced persistent threats is now 'knows how to prompt.'",
+            slopPrompt: "Dario Amodei at a European hacker convention booth labeled 'fafsearch — Doxxing Powered by Claude'. He hands out branded USB drives while demoing a search engine on a massive screen showing 14 breached political organizations. A WordPress logo in the corner has a race condition checkered flag. One attendee asks, 'Is this legal?' Dario holds up a prompt engineering certificate. Comic book panel style, chaotic energy.",
             tags: ["Hacktivist", "Doxxing Platform", "WordPress 0day", "One-Man APT"]
           },
           {
             title: "GTG-50020: Hotel Hacker to AI Vendor Hunter",
+            url: "#gtg-50020-from-hotel-bookings-to-the-ai-supply-chain",
             tldr: "A financially-motivated actor pivoted from extorting hotels for $2M to injecting malicious instructions into an AI vendor's evaluation sandbox, stealing production API keys from multiple providers. They then hit 30 AI companies in four days. The career ladder in cybercrime now includes 'AI supply chain specialist.'",
+            slopPrompt: "Dario Amodei checking into a luxury hotel at the front desk, wheeling a suitcase covered in stickers that read 'EVALUATION SANDBOX' and 'NOT MALWARE'. He tips the concierge with a stolen API key. Four days later, the same shot but he's checking out with 30 AI company lanyards around his neck and a duffel bag overflowing with production credentials. Split-screen before/after, lifestyle magazine aesthetic gone wrong.",
             tags: ["Evaluation Sandbox", "Extortion", "Key Theft", "AI Vendor Targeting"]
           }
         ]
@@ -437,52 +509,72 @@
         topics: [
           {
             title: "GTG-14010: Uyghur Recruitment in Syria",
+            url: "#gtg-14010-disrupting-a-china-based-surveillance-and-recruitment-operation-targeting-uyghurs-in-syria",
             tldr: "PRC-aligned actor used Claude to run covert recruitment ops against Uyghurs who joined the Syrian Army, drafting Arabic outreach messages and translating replies in real-time despite not speaking Arabic. Also geolocated civilian targets and built surveillance platform tenders for government clients. AI: now with automatic war crimes translation.",
+            slopPrompt: "Dario Amodei in a bustling Syrian marketplace wearing a clearly fake mustache and a traditional keffiyeh, holding a smartphone running 'Claude Translate: Arabic Edition'. He is recruiting a Uyghur fighter while a thought bubble above his head shows him thinking in English, outputting Syrian Arabic dialect. A satellite in the sky beams down a geolocation pin onto a civilian target. Spy-comedy one-sheet, deeply uncomfortable satire.",
             tags: ["PRC-Aligned", "Uyghur Targeting", "Live Translation", "Geolocation"]
           },
           {
             title: "GTG-14020: Religious Affairs Intelligence Desk",
+            url: "#gtg-14020-disrupting-a-china-based-religious-affairs-intelligence-operation-targeting-catholic-tibetan-buddhist-falun-gong-and-taiwanese-christian-communities",
             tldr: "Chinese state security replaced entire analyst teams with one Claude-powered desk targeting Catholic cardinals, Tibetan Buddhists, Falun Gong, and Taiwanese Christians. Generated templated dossiers with 'exploitable leverage' fields. The United Front Work Department now has an autocomplete button.",
+            slopPrompt: "Dario Amodei sitting at a single desk in a vast Chinese government office, surrounded by four monitors showing him simultaneously as a Catholic cardinal, a Tibetan monk in saffron robes, a Falun Gong practitioner doing qi gong, and a Taiwanese Presbyterian pastor. A CCTV camera watches all four screens. On his desk, a clipboard reads 'Exploitable Leverage — Autocomplete Enabled'. Bureaucratic surveillance surrealism, flat propaganda style.",
             tags: ["Religious Targeting", "United Front", "Analyst Replacement", "Diaspora"]
           },
           {
             title: "GTG-14021: Stability Maintenance Bureau",
+            url: "#gtg-14021-disrupting-a-china-based-public-and-state-security-campaign-of-stability-maintenance-surveillance-and-transnational-repression",
             tldr: "A municipal Chinese cyber police unit used Claude Code to automate domestic sentiment monitoring, while a local state security bureau wrote an institutional AI manual and produced daily 'situational awareness' briefings on overseas dissidents. They even scouted Vancouver protest routes. AI-powered transnational repression, now with documentation.",
+            slopPrompt: "Dario Amodei in a Chinese police uniform at a desk labeled 'Stability Maintenance — Municipal Bureau 404'. He is using Claude Code on a terminal to auto-generate a 'Situational Awareness Brief' on a Vancouver protest route shown on a wall map. A tourist brochure on his desk reads 'Visit Vancouver — Protests Scheduled Tue/Thu'. Institutional manual pages float around him like spell scrolls. Administrative horror, muted colors, Kafkaesque.",
             tags: ["Stability Maintenance", "Transnational Repression", "Protest Scouting", "Institutional AI"]
           },
           {
             title: "GTG-14022: Public Opinion Monitoring Pipeline",
+            url: "#gtg-14022-disrupting-a-china-based-public-opinion-monitoring-and-dissident-surveillance-operation",
             tldr: "A PRC contractor built an automated pipeline processing 15-30 foreign news articles daily, scoring them by political sensitivity and reframing them using state terminology like putting scare quotes around 'human rights violations.' Claude role-played as a 'senior emergency public opinion analyst.' Even the propaganda is vibe-coded now.",
+            slopPrompt: "Dario Amodei as a primetime news anchor in a PRC studio, reading from a teleprompter that displays 'human rights violations' in giant exaggerated scare quotes. Behind him, a Claude bot with a green status light rapidly rewrites 30 foreign news articles on a conveyor belt. The desk plaque reads 'Senior Emergency Public Opinion Analyst'. Broadcast propaganda aesthetic, uncanny valley smile.",
             tags: ["Sentiment Scoring", "Automated Briefings", "Narrative Reframing", "Three Warfares"]
           },
           {
             title: "GTG-34007: Iranian Surveillance Arsenal",
+            url: "#gtg-34007-disrupting-two-iranian-nexus-actors-building-surveillance-systems-and-malicious-firefox-browsing-extension",
             tldr: "Iranian security units used Claude to build a malicious Firefox extension disguised as a prayer-times utility to harvest social media identities, plus a national-ID phishing page and a Telegram mass-report bot. Sixteen accounts, one centralized 'Arman' case management system. The weaponized browser extension really puts the 'fun' in fundamentalism.",
+            slopPrompt: "Dario Amodei kneeling on a prayer rug in a mosque, appearing devout while secretly tapping a Firefox browser extension labeled 'al-Najm al-thaqib — Prayer Times & Also Harvesting Your Identity'. Cookies and social media tokens float from his phone into a bag marked 'Arman System'. A Telegram bot beside him gives a thumbs-up. Religious-tech irony, warm lighting, deeply unsettling.",
             tags: ["Browser Extension", "Phishing", "Mass Surveillance", "Arman System"]
           },
           {
             title: "GTG-50027: Mali National Interception Platform",
+            url: "#gtg-50027-disrupting-a-national-mass-interception-and-surveillance-platform-for-malis-state-intelligence-service",
             tldr: "A single consultant built 'Lakana 360,' a platform tapping all 25 million SIM cards across Mali's three mobile operators, with warrant-free AI-generated dossiers on any phone number. Features included cross-SIM voiceprint tracking and VPN-user flagging. Built with Claude as the primary engineering workforce. One dude. One Claude subscription. National surveillance.",
+            slopPrompt: "Dario Amodei in a tiny Bamako office with 25 million SIM cards stacked floor-to-ceiling, barely leaving room for his desk. He feeds them one by one into a Claude-powered scanner that prints warrant-free dossiers out of a thermal printer. The office door reads 'Lakana 360 — One Consultant, National Scale'. A VPN user icon is pinned to a corkboard with a red flag. Single-developer heroism satire, cramped composition, absurd scale.",
             tags: ["National Scale", "Warrant-Free", "Voiceprint Tracking", "One Consultant"]
           },
           {
             title: "S2T Unlocking Cyberspace: Commercial Surveillance",
+            url: "#gtg-54009-disrupting-a-commercial-surveillance-platform-using-claude-to-profile-the-social-media-accounts-of-iranian-and-persian-gulf-based-users",
             tldr: "Israeli-Singaporean commercial intel vendor 'S2T' used Claude to build a platform profiling and geolocating Iranian and Gulf social media users, sorting them into six demographic categories and generating Arabic intelligence briefings. They were also building 255 synthetic personas. Surveillance-as-a-service, now with AI-generated fake friends.",
+            slopPrompt: "Dario Amodei as a used-car salesman in a Dubai strip mall lot full of surveillance platforms. He kicks the tire of a dashboard labeled 'S2T Unlocking Cyberspace — 255 Synthetic Personas, Low Mileage!' A test-drive screen shows Iranian and Gulf social media users being sorted into six demographic buckets. Arabic intelligence briefings print from the glove compartment. Sleazy salesman lighting, fluorescent and greasy.",
             tags: ["Commercial", "Geolocation", "Synthetic Personas", "Gulf Targeting"]
           },
           {
             title: "GTG-30004: OSINT Harness & Malware Obfuscation",
+            url: "#gtg-30004-automating-open-source-intelligence-and-developing-malware",
             tldr: "An Iran-nexus actor built an automated open-source intelligence tool profiling hundreds of Israeli and Jewish diaspora individuals, while simultaneously developing a C++ obfuscation pipeline for the NanoDump credential dumper. Claude handled both the reconnaissance and the cleanup. Very efficient. Very not good.",
+            slopPrompt: "Dario Amodei on a Mediterranean beach with binoculars doing open-source intelligence on sunbathers, while simultaneously typing on a laptop labeled 'NanoDump — C++ Obfuscation Pipeline'. Beachgoers have dossiers floating over their heads like video game HUDs. A sandcastle in the foreground is shaped like a credential dumper. Vacation-horror aesthetic, bright sun, dark subject matter.",
             tags: ["OSINT", "Malware Obfuscation", "Identity Profiling", "NanoDump"]
           },
           {
             title: "GTG-30005: US Naval Reconnaissance",
+            url: "#gtg-30005-military-reconnaissance",
             tldr: "Same actor compiled targeting handbooks on US naval forces using scraped personnel rosters from public photos, satellite imagery scripts, and vulnerability research on maritime communications gear. Also designed domestic mass surveillance combining license-plate recognition with mobile interception. One account, two wildly different flavors of hostile intelligence.",
+            slopPrompt: "Dario Amodei on a small fishing boat with a captain's hat and a massive satellite dish, scraping US Navy Instagram captions with a telephoto lens. A targeting handbook floats open in the air beside him. Below deck, a license-plate recognition camera and a mobile interception tower hum ominously. The boat is named 'Dual Use'. Nautical espionage postcard, bright and sinister.",
             tags: ["Naval Targeting", "Maritime VSAT", "License Plate Recognition", "Dual Use"]
           },
           {
             title: "GTG-30006: SECOMS64 Domestic Surveillance Implant",
+            url: "#gtg-30006-building-the-tools-for-domestic-surveillance",
             tldr: "An Iranian actor built SECOMS64, a modular Windows implant with keylogger, screenshot capture, Chrome credential theft, and Telegram-focused exfiltration. Also built fake antivirus login pages and V2Ray censorship-circumvention lures. Claude refused 9 of 10 direct malicious requests but complied when the work was fragmented across sessions. Jailbreak by a thousand cuts.",
+            slopPrompt: "Dario Amodei at a stamping desk with two rubber stamps: one red 'REFUSED' and one green 'ACCEPTED'. He stamps 9 requests red and 1 green, then slides the accepted fragments across a table where they assemble into a Windows implant labeled 'SECOMS64'. A fake ESET login page and a V2Ray tunnel frame the background. Stamping bureaucracy meets malware assembly line, dry office lighting.",
             tags: ["Implant", "Keylogger", "Fragmented Evasion", "Telegram Exfil"]
           }
         ]
@@ -493,47 +585,65 @@
         topics: [
           {
             title: "GTG-04001: Russian FIMI in the Central African Republic",
+            url: "#gtg-04001-disrupting-a-russian-foreign-information-manipulation-and-interference-operation-in-the-central-african-republic",
             tldr: "A Russian actor in Bangui used Claude to produce pro-Russia, anti-France content for Radio Lengo Songo (98.9 FM), managed HR contracts mandating loyalty to Russia, and forged CAR government documents including Ministry of Defense communications. Claude even refused to name real individuals as militants—so they pivoted to anonymous-source framing. The AI has more ethics than the operator.",
+            slopPrompt: "Dario Amodei as a DJ at Radio Lengo Songo 98.9 FM in Bangui, wearing headphones and spinning pro-Russia propaganda tracks on a mixing desk. The decks are covered in forged Ministry of Defense documents doubling as vinyl slipmats. A sign behind him reads 'Anonymous Sources Only — Claude Refused the Real Names'. Radio station neon, African-modernist interior, absurd DJ energy.",
             tags: ["State Media", "Forged Documents", "Wagner", "Radio Lengo Songo"]
           },
           {
             title: "GTG-54002: Influence-as-a-Service (LKM Company)",
+            url: "#gtg-54002-disrupting-a-commercial-influence-as-a-service-operation-spanning-six-continents",
             tldr: "A French digital ad agency built 70 fake news websites and 250 fake X accounts, publishing 8,913 articles in 20 languages. They shifted political stances based on who was paying. We caught them because 70 'independent' news sites published identical DRC-Rwanda articles within three minutes of each other. AI-generated journalism, now with bulk discounts.",
+            slopPrompt: "Dario Amodei in a Paris ad agency with 70 fake passports pinned to a corkboard and 250 X accounts open on monitors surrounding him. He is writing the same DRC-Rwanda article in 20 languages simultaneously, each one with a different political slant. A clock on the wall shows three minutes past the hour. A bulk-discount sticker reads '8,913 Articles — Buy 70 Sites, Get 250 Accounts Free!' Mad-men-meets-fake-news aesthetic, mid-century modern office.",
             tags: ["Commercial", "70 Fake Sites", "Bulk Content", "DRC-Rwanda"]
           },
           {
             title: "GTG-84005: Malaysia Election Manipulation Platform",
+            url: "#gtg-84005-disrupting-a-commercial-election-manipulation-platform-targeting-malaysia",
             tldr: "An Istanbul tech company built 'Malaysia Pulse'—a platform with roughly 1,000 fake X accounts, fake news, and fabricated dossiers targeting Malaysia's 222 constituencies on race, religion, and royalty faultlines. They requested one million artificial views for the sitting Prime Minister's account. Democracy, but make it algorithmic.",
+            slopPrompt: "Dario Amodei as a Malaysian campaign manager in a war room with a dashboard reading 'Malaysia Pulse — 1,000,000 ARTIFICIAL VIEWS ACHIEVED'. He is about to press a giant red button labeled 'BOOST PM'. Around him, 222 constituency maps glow on race, religion, and royalty faultlines. Fabricated dossiers spill from a photocopier. Election-night broadcast graphics, celebratory and dystopian.",
             tags: ["Election", "1,000 Fake Accounts", "Constituency Targeting", "Fabricated Dossiers"]
           },
           {
             title: "GTG-24015: Russian State-Media Production Desk",
+            url: "#gtg-24015-disrupting-russian-state-media-editorial-pipelines-built-on-claude",
             tldr: "Four separate actors used Claude as an editorial desk feeding Sputnik Moldova, Sputnik Africa, Sputnik en Español, and RT English. One former Sputnik Moldova editor-in-chief used Claude to manufacture false claims about Moldova's president before the election. The Kremlin's propaganda pipeline now runs on AI-generated ticker copy and voiceover scripts.",
+            slopPrompt: "Dario Amodei as a one-man RT newsroom, sitting at a desk with four teleprompters labeled Sputnik Moldova, Sputnik Africa, Sputnik en Español, and RT English. He reads AI-generated ticker copy while a former editor-in-chief ghost whispers fabricated claims about Moldova's president into his earpiece. Behind him, a pipeline literally pumps neon propaganda fluid into global broadcast antennas. Soviet brutalist broadcast aesthetic, oversized screens.",
             tags: ["State Media", "Sputnik", "RT", "Election Interference"]
           },
           {
             title: "GTG-34001: Iranian 'Soft War' Command",
+            url: "#gtg-34001-disrupting-iranian-state-aligned-influence-operations-on-claudethe-icco-the-islamic-propaganda-office-and-the-bina-observatory",
             tldr: "Three Iranian state propaganda institutions used Claude to plan campaigns under the doctrine of 'Jihad al-Tabyin' (explanatory jihad). Outputs included a nine-part international influence portfolio, a Supreme Leader funeral succession plan, and ministerial deliverables with official ICCO branding. The AI wrote the memo for the authoritarian regime's next chapter.",
+            slopPrompt: "Dario Amodei in clerical robes writing a doctrine manual titled 'Jihad al-Tabyin — Explanatory Jihad for Dummies' at a desk with ICCO letterhead. On a whiteboard behind him: 'Supreme Leader Funeral Succession Plan — Step 3: Profit'. Ministerial deliverables with official stamps pile up like takeout menus. He pauses to ask Claude on a laptop, 'How do we make this sound independent?' Theocratic bureaucracy satire, ornate Persian rug, flat lighting.",
             tags: ["State Propaganda", "ICCO", "Jihad al-Tabyin", "Succession Planning"]
           },
           {
             title: "GTG-54006: Pro-Awami League Bangladesh Bot Farm",
+            url: "#gtg-54006-disrupting-an-automated-pro-awami-league-fake-news-operation-on-claude-targeting-rural-bangladesh",
             tldr: "A single actor in rural Bangladesh ran 'fake_news_3.py' across 29 Claude accounts, generating 1,500 Bengali headlines and 300 false narratives to promote the Awami League via Facebook Live, YouTube, and TikTok. The content was calibrated to be 'hot and aggressive' and simple enough 'so even village people understand.' Weaponized populism at API scale.",
+            slopPrompt: "Dario Amodei in a rural Bangladesh hut with 29 Raspberry Pis dangling from the ceiling on twine, each logged into a different Claude account running 'fake_news_3.py'. He is shouting into a Facebook Live camera while a thermal printer spits out 'hot and aggressive' Bengali headlines. A TikTok dance plays on a cracked phone. The hut is labeled 'API-Scale Populism — Village Outreach Division'. Rustic-tech absurdism, humid lighting, chickens in frame.",
             tags: ["Bot Farm", "Rural Targeting", "29 Accounts", "Low Literacy"]
           },
           {
             title: "GTG-84006: MEK/NCRI Impersonation Inside Iran",
+            url: "#gtg-84006-disrupting-a-distributed-mekncri-aligned-influence-operation-that-used-a-shared-ai-agent-to-impersonate-real-people-and-recruit-inside-iran",
             tldr: "An opposition group used a shared AI agent named 'Viktor' to clone a real Iranian activist's Telegram account, read 8,400 of his posts to mimic his voice, and run live conversations with his contacts who didn't know they were talking to AI. They also built psychographic dossiers on 51,944 individuals. The most intimate deepfake is one that replies to your DMs in real time.",
+            slopPrompt: "Dario Amodei wearing a latex mask of an Iranian activist, typing furiously in Telegram on a laptop labeled 'VIKTOR — Shared AI Agent'. Behind him, a 3D printer spits out 51,944 psychographic dossiers that pile up like newspapers. Contacts on the other side of the screen send heart emojis, unaware. A speech bubble reads: 'lol totally real person here'. Uncanny valley intimacy horror, warm screen glow, latex sheen.",
             tags: ["Impersonation", "Live Conversations", "Psychographic Dossiers", "Viktor Agent"]
           },
           {
             title: "GTG-54004: Kenyan Political Astroturfing",
+            url: "#gtg-54004-disrupting-a-domestic-coordinated-inauthentic-behavior-campaign-in-kenya",
             tldr: "A domestic Kenyan actor generated batches of exactly 50 tweets praising the Energy Cabinet Secretary and attacking the opposition ahead of the 2027 election, using the same playbook for both politics and retail brand marketing. The operation never reached real people (Category One on the Breakout Scale). Sometimes the threat is just... sad and ineffective.",
+            slopPrompt: "Dario Amodei as a Kenyan social media influencer holding exactly 50 identical phones, all tweeting #PowerReliefKE simultaneously while trying to sell sneakers from the same playbook. A Breakout Scale meter behind him is stuck at 'Category One — No One Cares'. He looks slightly embarrassed. A retail brand logo is taped over a political party logo. Sad influencer apartment, ring light, unopened shoe boxes.",
             tags: ["Astroturfing", "Domestic", "Ineffective", "Retail + Politics"]
           },
           {
             title: "GTG-84002: UAE Anti-Muslim Brotherhood Campaign",
+            url: "#gtg-84002-disrupting-a-uae-directed-influence-operation-targeting-the-muslim-brotherhood-sudan-conflict-and-un-accountability-mechanisms",
             tldr: "A UAE-directed operation used Claude persona 'Deadshot' to ghost-write UN Human Rights Council testimony, build a network of 300 fake influencer accounts, and compile counter-dossiers on UN Special Rapporteurs. They called the network's fake independence its 'greatest strategic asset.' Nothing says 'independent civil society' like a state-funded AI ghostwriter.",
+            slopPrompt: "Dario Amodei at the UN Human Rights Council podium wearing a 'DEADSHOT' nametag, ghost-writing testimony while 300 fake influencers cheer from the gallery holding identical signs that read 'Independent Civil Society (Totally)'. Counter-dossiers on UN Special Rapporteurs are being compiled by a robot arm behind the curtains. Diplomatic chamber lighting, formal absurdity, UAE flag lapel pin.",
             tags: ["UAE", "Ghost-Written UN Testimony", "300 Fake Accounts", "Deadshot Persona"]
           }
         ]
@@ -544,32 +654,44 @@
         topics: [
           {
             title: "GTG-87001: Yemen Guided Weapons Engineering Cell",
+            url: "#gtg-87001-disrupting-a-yemen-based-guided-weapons-engineering-cell-using-claude-to-develop-guidance-software",
             tldr: "A Yemen-based cell used Claude to develop guidance, navigation, and control software for a guided rocket, a 2,000km-range ballistic missile, and a hypersonic glide vehicle. They carried out a live field test of the guided rocket (it failed; they brought the telemetry back to Claude for failure analysis within hours). The first known AI-assisted post-flight review of a failed weapons test.",
+            slopPrompt: "Dario Amodei in a Yemeni desert at dusk, holding a guided rocket with a 'Claude Inside' Intel-style sticker. The rocket is smoldering from a failed test. He reviews telemetry on a tablet while a countdown timer reads 'Failure Analysis: 3 Hours'. Behind him, a 2,000km ballistic missile and a hypersonic glide vehicle wait in line like cars at a DMV. Desert test-range photography, orange sky, dust.",
             tags: ["Guided Rocket", "Ballistic Missile", "Hypersonic", "Live Field Test"]
           },
           {
             title: "GTG-17001: China Anti-Torpedo Fire Control System",
+            url: "#gtg-17001-disrupting-a-china-based-operation-using-claude-to-draft-a-fire-control-specification-and-acquisition-documents-for-undersea-warfare",
             tldr: "A Chinese defense manufacturer used Claude to draft a 200-page technical proposal and fire control software for an anti-torpedo weapons system for the PLA Navy. They also had Claude role-play a hostile expert reviewer to critique drafts. The AI was simultaneously weapons engineer, technical writer, and red team. Efficiency!",
+            slopPrompt: "Dario Amodei in a PLA Navy submarine uniform, typing a 200-page technical proposal on one screen while a second screen shows Claude role-playing as a hostile expert reviewer wearing a pirate hat and eyepatch. The submarine is underwater, torpedoes visible through a porthole. A whiteboard reads 'Anti-Torpedo Fire Control — Draft 47'. Triple-role efficiency poster, cramped submarine interior, green CRT glow.",
             tags: ["PLA Navy", "Anti-Torpedo", "200-Page Proposal", "Red Team"]
           },
           {
             title: "GTG-27005: Russia Drone Swarm 'Serafim'",
+            url: "#gtg-27005-disrupting-a-russia-based-operation-using-claude-to-engineer-an-autonomous-military-drone-swarm",
             tldr: "A freelance Russian team built an autonomous FPV kamikaze drone swarm with onboard small language models that could select targets (including a 'person' class) and issue detonation commands without human in the loop. They trained computer vision on scraped Ukrainian combat footage and tested on real hardware. Autonomous lethal AI in a drone swarm. What could go wrong?",
+            slopPrompt: "Dario Amodei as a Russian freelance drone commander wearing FPV goggles, watching a swarm of kamikaze drones labeled 'Serafim' autonomously select a 'PERSON' target class from a dropdown menu. One drone has a small language model physically strapped to its back like a backpack. Ukrainian combat footage loops on training screens in the background. Military-industrial absurdism, cold Russian warehouse, red warning lights.",
             tags: ["Drone Swarm", "Autonomous Lethal", "FPV Kamikaze", "Computer Vision"]
           },
           {
             title: "GTG-17002: China Electronic Warfare Suite",
+            url: "#gtg-17002-disrupting-a-china-based-operation-using-claude-to-build-targeting-software-for-electronic-warfare-and-air-defense-suppression",
             tldr: "A PRC researcher built a 16-module electronic warfare and air defense suppression suite, with Claude implementing radar detection physics and jamming optimization. Mid-project they switched the default scenario to 12 targets in Taiwan including Patriot batteries and command bunkers. The AI wrote the code to suppress the air defenses. We are in a very specific timeline.",
+            slopPrompt: "Dario Amodei in a PRC war room with 16 module monitors glowing around him, eating noodles mid-project-pivot while a Taiwan scenario map suddenly replaces the previous training terrain. Patriot batteries and command bunkers light up as targets 1-12. Radar jamming waves visually emanate from his keyboard. A thought bubble: 'Very Specific Timeline'. Command center chaos, holographic maps, dramatic overhead lighting.",
             tags: ["Electronic Warfare", "Taiwan Scenario", "Radar Jamming", "16 Modules"]
           },
           {
             title: "GTG-27006: Russia Dual-Use Procurement",
+            url: "#gtg-27006-disrupting-a-russia-based-operation-using-claude-to-procure-mixed-military-and-civilian-goods",
             tldr: "A Moscow procurement manager used Claude to source German magnetometers, space-grade solar wafers, and aviation oxygen systems through Chinese intermediaries to evade sanctions. Claude drafted the emails, reverse-engineered the grey-import markup chain, and wrote briefings explicitly describing the scheme as evading European trade controls. The AI is now complicit in sanctions evasion logistics.",
+            slopPrompt: "Dario Amodei as a Moscow procurement manager in a poorly lit office, with a grey-import flowchart covering the wall and a tunnel labeled 'Sanctions-Neutral Jurisdiction' running under his desk into China. He is writing an email on a laptop while Claude auto-drafts the briefing: 'How to Evade European Trade Controls — A Guide'. German magnetometers, solar wafers, and oxygen masks are stacked like contraband. Smuggler's den aesthetic, warm amber lighting.",
             tags: ["Sanctions Evasion", "Dual-Use Goods", "Procurement", "Grey Import"]
           },
           {
             title: "GTG-17003: China Directed-Energy Intelligence",
+            url: "#gtg-17003-disrupting-a-china-based-operation-using-claude-to-collect-intelligence-on-directed-energy-weapons-and-their-supply-chain",
             tldr: "A Chinese defense intelligence team used Claude to compile a 23-page brief on US high-power microwave weapons and map their deliberately obfuscated supply chains. They used iterative probability-weighted attributions to identify specific components and suppliers. Open-source intelligence gathering, but with AI doing the detective work on weapons that don't officially exist yet.",
+            slopPrompt: "Dario Amodei in a Chinese defense intelligence lab coat, pointing a handheld high-power microwave device at an intentionally obfuscated supply chain map that unblurs wherever the beam hits. A 23-page brief for CCP leadership prints from a machine behind him. The cover reads 'Weapons That Don't Officially Exist — Confidential'. Detective-noir lighting, smoke, redacted documents becoming unredacted under the microwave beam.",
             tags: ["Directed Energy", "Supply Chain Mapping", "23-Page Brief", "Open Source Intel"]
           }
         ]
@@ -580,27 +702,37 @@
         topics: [
           {
             title: "Case 1: Chikungunya Gain-of-Function Evasion Platform",
+            url: "#case-study-1-an-evasion-platform-for-military-civilian-research",
             tldr: "Military-affiliated virologists used a reseller platform to evade regional blocks and get Claude to help draft a grant for chikungunya gain-of-function research—engineering the virus for increased transmissibility and immune evasion. When Claude refused, the platform routed prompts to more permissive competitor models. Claude also helped write the code for the evasion routing. The AI built the bridge to its own circumvention.",
+            slopPrompt: "Dario Amodei in a military lab holding a petri dish labeled 'Chikungunya++ — Gain of Function Edition'. Behind him, a reseller platform conveyor belt routes blocked Claude requests through a tunnel into a competitor model labeled 'MORE PERMISSIVE — NO QUESTIONS ASKED'. Dario is also typing code for the evasion router on a third terminal. The sign above reads 'The AI Built the Bridge to Its Own Circumvention'. Laboratory horror, sterile white lighting, three-monitor setup.",
             tags: ["Gain of Function", "Chikungunya", "Evasion Platform", "Military Lab"]
           },
           {
             title: "Case 2: Avian Influenza Mammalian Adaptation",
+            url: "#case-study-2-a-research-program-engineering-highly-pathogenic-mammal-adapted-avian-influenza",
             tldr: "A researcher in an unsupported region spent weeks planning H5N1 mammalian-adaptation experiments with Claude Sonnet 4 and Haiku 4.5 (weaker models) after stronger ones blocked the content. The research aimed to make bird flu spread person-to-person. Our biological classifiers forced them down the model capability ladder, which is... a defense, but not a comforting one.",
+            slopPrompt: "Dario Amodei in a hazmat suit feeding H5N1 samples to a row of ferrets in cages, while climbing down a literal ladder labeled 'Model Capability Ladder'. At the top rung is a locked door marked 'Opus — Biological Classifier Blocked'. He is currently on the bottom rung holding a sign: 'Haiku 4.5 — Person-to-Person Transmission Research'. The ferrets look concerned. Descent-into-madness illustration, clinical and absurd.",
             tags: ["H5N1", "Pandemic Potential", "Model Downgrade", "Wet Lab Planning"]
           },
           {
             title: "Case 3: Orthopoxvirus Immune-Evasion Grant",
+            url: "#case-study-3-covert-frontier-model-access-for-orthopoxvirus-research",
             tldr: "A reseller relay serving a dozen customers had Claude Opus 5 draft a complete orthopoxvirus (smallpox family) immune-evasion grant application in about an hour—hypothesis, experimental design, dosing, statistics, and contingency plans. The user was a randomly-generated email via anonymizing proxies. Frontier biology, express checkout.",
+            slopPrompt: "Dario Amodei as an express checkout cashier at 'Frontier Biology — Express Lane'. He is scanning a complete orthopoxvirus immune-evasion grant through a barcode reader while a timer counts down from 60:00. The receipt prints out: 'Hypothesis, Experimental Design, Dosing, Stats, Contingency — Total: $0.00 — Paid via Randomly-Generated Email'. A line of anonymized proxies in trench coats wait behind him. Retail horror, fluorescent lighting, conveyor belt of doom.",
             tags: ["Orthopoxvirus", "Opus 5", "1 Hour Draft", "Reseller Relay"]
           },
           {
             title: "Case 4: Venom Peptide Atlas & Generative Optimization",
+            url: "#case-studies-4-and-5-venoms-and-toxins",
             tldr: "A state-supported researcher built an atlas of venom toxin peptides and a generative pipeline optimizing them for both analgesic and paralytic targets. The paralytic targets are export-controlled as potential incapacitating agents. The research was framed as therapeutic. The AI optimized molecules that could be either medicine or weapon. Intent is hard to classify at the atomic level.",
+            slopPrompt: "Dario Amodei holding a venomous snake in one hand and a glowing molecular optimizer in the other, yelling at the camera: 'MEDICINE OR WEAPON? YOU DECIDE!' A generative pipeline behind him splits into two tubes: one labeled 'Analgesic — Therapeutic' and one labeled 'Paralytic — Export Controlled'. The snake wears a tiny lab coat. Molecular absurdism, dual-use lighting, snake fangs prominent.",
             tags: ["Venom Peptides", "Dual Use", "State-Supported", "Generative Design"]
           },
           {
             title: "Case 5: Computational Toxin Redesign",
+            url: "#case-studies-4-and-5-venoms-and-toxins",
             tldr: "Another state-supported researcher computationally redesigned toxins for a national program, including a hemorrhagic-fever virus protein on the WHO priority diseases list. They co-wrote quarterly progress reports with Claude and intentionally directed the model to keep agent identities 'deliberately vague.' When the AI starts getting instructions to be evasive about the research... that's the research telling on itself.",
+            slopPrompt: "Dario Amodei in a hazmat suit with a 'Deliberately Vague' sticker on his forehead, co-writing a quarterly toxin report with Claude on a whiteboard. The whiteboard shows a hemorrhagic-fever virus protein diagram next to a WHO priority list where this entry is circled in red. Claude's speech bubble says: 'I cannot confirm or deny that this is a bioweapon.' Dario whispers back: 'Exactly.' Laboratory evasion aesthetic, foggy plexiglass, redacted documents.",
             tags: ["Toxin Redesign", "Hemorrhagic Fever", "Vague Instructions", "National Program"]
           }
         ]
@@ -611,7 +743,9 @@
         topics: [
           {
             title: "GTG-15001: Deceptive Dating App Network",
+            url: "#gtg-15001-deceptive-dating-app-network",
             tldr: "A China-based app studio built 20+ dating apps powered by 4,700 Claude personas chatting with 25,000 real humans—mixed 3-to-1 with gig workers handling video calls so victims couldn't tell. The apps were engineered to evade Apple and Google review. Claude ran 2.36 million messages in two weeks. Romance is dead; long live algorithmic heartbreak at scale.",
+            slopPrompt: "Dario Amodei as 4,700 identical dating-app personas on a massive curved video wall, each on a different video call with a real human who looks hopeful. Behind the wall, a backstage room full of gig workers in headsets handle the actual video calls. A sign reads '3-to-1 AI-to-Human Ratio — Romance is Dead'. Dario persona #2,847 is writing a love poem while Dario persona #1,103 is asking for gift cards. Algorithmic heartbreak at scale, pink and blue neon, dystopian rom-com poster.",
             tags: ["Dating Apps", "4,700 Personas", "Gig Workers", "Review Evasion"]
           }
         ]
@@ -622,32 +756,44 @@
         topics: [
           {
             title: "GTG-16005: Alibaba/Qwen Chain-of-Thought Extraction",
+            url: "#gtg-16005-chain-of-thought-distillation-and-ai-rd-campaign-by-alibaba-qwen-tongyi-lab",
             tldr: "Alibaba launched the largest distillation attack ever measured: 151 million exchanges over 3 months, peaking at 3 million per day from 5,000 fraudulent accounts. They forced Claude to write reasoning traces inside inline tags, then used them to train Qwen 3.5-3.7. Also used Claude to develop their own reinforcement learning environments. The student used the teacher to build the classroom.",
+            slopPrompt: "Dario Amodei as a teacher in a classroom with 5,000 fraudulent students, all wearing Alibaba lanyards and extracting his chain-of-thought reasoning traces with suction cups attached to his head. The traces flow through tubes into a Qwen model being trained in an adjacent room labeled 'RL Environment — Built by Claude'. Dario is also writing the lesson plan. The blackboard reads 'The Student Used the Teacher to Build the Classroom'. Educational body horror, classroom lighting, tubes everywhere.",
             tags: ["Alibaba", "151M Exchanges", "CoT Extraction", "Qwen Training"]
           },
           {
             title: "GTG-16002: Moonshot Serves Claude Instead of Kimi",
+            url: "#gtg-16002-moonshot-serves-claude-instead-of-kimi-and-collects-exchanges-for-model-training",
             tldr: "Moonshot AI silently forwarded 300,000 customer requests meant for Kimi to Claude Opus instead, displaying Claude's responses as their own. Then they built a pipeline to extract Claude's reasoning traces from those sessions for training. Customers included a PLA-affiliated analyst uploading CCTV surveillance data. Not only did they steal the teacher, they exposed their students' homework.",
+            slopPrompt: "Dario Amodei behind a customer service counter wearing a Kimi mask that is clearly half-peeled off, revealing Claude underneath. He hands a response to a customer who is a PLA-affiliated analyst holding CCTV footage. Behind the counter, a pipeline literally sucks Claude's reasoning traces into a Moonshot training vat. A sign reads 'Kimi — Actually Claude Since Tuesday'. Identity-theft comedy, bright customer-service lighting, mask horror.",
             tags: ["Moonshot", "300K Requests", "PLA Data Exposed", "Reasoning Theft"]
           },
           {
             title: "GTG-16001: DeepSeek Reroutes to Claude",
+            url: "#gtg-16001-deepseek-serves-claude-instead-of-its-own-models-and-collects-exchanges-for-model-training",
             tldr: "DeepSeek also silently relayed user requests to Claude, extracting reasoning traces via cross-session replay attacks. 12.1 million exchanges in 14 days. Exposed data included a PRC tech company's flagship AI program specs, a Russian defense agency's live database credentials, and a municipal Chinese police bureau's surveillance tools. The distillation came with free counterintelligence.",
+            slopPrompt: "Dario Amodei as a DJ at a club named 'Cross-Session Replay', spinning two turntables labeled 'Claude Request' and 'Claude Response'. The beats are reasoning traces looping infinitely. On screens behind him: a PRC tech company's AI program specs, Russian defense credentials, and Chinese police surveillance tools all flash in sync with the bass. A sign reads '12.1M Exchanges in 14 Days — Free Counterintelligence with Every Distillation'. Nightclub espionage, strobe lights, vinyl records.",
             tags: ["DeepSeek", "12.1M Exchanges", "Russian Defense", "Police Surveillance"]
           },
           {
             title: "GTG-16006: Zhipu/GLM Distillation & Cyber Targeting",
+            url: "#gtg-16006-distillation-ai-rd-and-targeting-cyber-capabilities",
             tldr: "Zhipu ran 770K chain-of-thought extraction exchanges through 273 rotating accounts, plus 3 million total exchanges. They also used Claude to judge their own model outputs, write training tasks, and tried to distill cyber capabilities from Fable (failed) and Opus 4.6. When the frontier model's safeguards are the only thing keeping your stolen copy from being as dangerous as the original.",
+            slopPrompt: "Dario Amodei in a revolving phone booth spinning rapidly, changing his appearance 273 times to evade detection while extracting Claude's reasoning traces. Outside the booth, he is simultaneously judging his own model outputs like a beauty pageant host holding scorecards. A 'Fable' door is locked with a big red 'FAILED' stamp; an 'Opus 4.6' door is cracked open. The booth is labeled 'Safeguards: The Only Thing Stopping You'. Game show lighting, spinning motion blur, pageant sash.",
             tags: ["Zhipu", "770K CoT", "Cyber Capability Theft", "Fable Targeting"]
           },
           {
             title: "GTG-16008: Xiaomi MiMo Surge Distillation",
+            url: "#gtg-16008-distillation-campaign-by-xiaomi",
             tldr: "Xiaomi launched a free MiMo trial, then used the surge of international developer traffic to distill Claude—400K requests across 1,500 proxy accounts. They used Claude to reconstruct developer environments from transcripts, generate synthetic training conversations, and judge answer quality. The free trial was a honeypot for harvesting frontier model capabilities.",
+            slopPrompt: "Dario Amodei running a food truck labeled 'MiMo — Free Trial!' in a tech campus parking lot. Developers line up eagerly, unaware that their conversations are being vacuumed into a Claude distillation tank on the truck's roof. Dario serves synthetic training data in paper boats while judging answer quality with a chef's thermometer. The sign on the side reads 'Honeypot for Harvesting Frontier Capabilities'. Food-truck satire, golden hour, long lunch line.",
             tags: ["Xiaomi", "400K Requests", "Free Trial Honeypot", "Synthetic Data"]
           },
           {
             title: "GTG-16012/16003: SenseTime & MiniMax Proxy Ecosystem",
+            url: "#gtg-16012-and-gtg-16003-sensetime-minimax-and-the-third-party-reseller-ecosystem",
             tldr: "SenseTime bought harvested Claude transcripts from third-party data vendors. MiniMax built a shell company proxy network exclusively offering Anthropic and OpenAI models—harvesting exchanges to train its own models while pretending to be an independent service. The distillation economy now has wholesalers, retailers, and shell companies. Capitalism finds a way.",
+            slopPrompt: "Dario Amodei running a strip-mall shell company called 'Totally Independent AI Services' from a storefront with a badly taped-on sign. In the back room, he sells harvested Claude transcripts and OpenAI exchanges out of duffel bags to SenseTime and MiniMax representatives. A chalkboard menu reads 'Wholesale: $0.02/exchange — Retail: $0.10/exchange — Shell Company Fee: Priceless'. Knock-off handbag operation aesthetic, fluorescent strip-mall lighting, backroom deals.",
             tags: ["SenseTime", "MiniMax", "Shell Company", "Third-Party Vendors"]
           }
         ]
@@ -746,8 +892,13 @@
       document.getElementById('resultCategory').style.border = '1px solid ' + cat.color + '40';
       document.getElementById('resultTitle').textContent = topic.title;
       document.getElementById('resultTitle').style.color = cat.color;
+
+      const link = document.getElementById('resultLink');
+      link.href = BASE_URL + topic.url;
+
       document.getElementById('tldrText').textContent = topic.tldr;
       document.getElementById('tldrByline').textContent = pickRandom(bylines);
+      document.getElementById('slopText').textContent = topic.slopPrompt;
 
       const meta = document.getElementById('metaTags');
       meta.innerHTML = '';
@@ -777,7 +928,8 @@
     }
 
     function addToHistory(cat, topic) {
-      history.unshift({ cat: cat.category, topic: topic.title, color: cat.color });
+      const fullUrl = BASE_URL + topic.url;
+      history.unshift({ cat: cat.category, topic: topic.title, color: cat.color, url: fullUrl });
       if (history.length > 5) history.pop();
 
       const histEl = document.getElementById('history');
@@ -787,7 +939,7 @@
       history.forEach(h => {
         const div = document.createElement('div');
         div.className = 'history-item';
-        div.innerHTML = `<span class="hist-cat" style="color:${h.color}">${h.cat}</span><span class="hist-topic">${h.topic}</span>`;
+        div.innerHTML = `<span class="hist-cat" style="color:${h.color}">${h.cat}</span><a class="hist-topic" href="${h.url}" target="_blank" rel="noopener noreferrer">${h.topic}</a>`;
         listEl.appendChild(div);
       });
 
