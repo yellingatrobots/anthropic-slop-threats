@@ -363,12 +363,24 @@
       font-weight: 600;
       line-height: 1.35;
       color: var(--text);
-      text-decoration: none;
+      cursor: pointer;
     }
 
     .history-item .hist-topic:hover {
-      text-decoration: underline;
       color: var(--accent-2);
+    }
+
+    .history-item .hist-link {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-faint);
+      text-decoration: none;
+      margin-left: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .history-item .hist-link:hover {
+      color: var(--text);
     }
 
     .confetti {
@@ -877,7 +889,7 @@
       topReel.classList.add('final');
 
       await sleep(250);
-      showResult(selectedCategory, selectedTopic);
+      renderResult(selectedCategory, selectedTopic);
       addToHistory(selectedCategory, selectedTopic);
       fireConfetti();
 
@@ -885,7 +897,7 @@
       document.getElementById('spinBtn').disabled = false;
     }
 
-    function showResult(cat, topic) {
+    function renderResult(cat, topic) {
       document.getElementById('resultCategory').textContent = cat.category;
       document.getElementById('resultCategory').style.background = cat.color + '18';
       document.getElementById('resultCategory').style.color = cat.color;
@@ -928,19 +940,38 @@
     }
 
     function addToHistory(cat, topic) {
-      const fullUrl = BASE_URL + topic.url;
-      history.unshift({ cat: cat.category, topic: topic.title, color: cat.color, url: fullUrl });
+      history.unshift({ catObj: cat, topicObj: topic });
       if (history.length > 5) history.pop();
 
+      renderHistory();
+    }
+
+    function renderHistory() {
       const histEl = document.getElementById('history');
       const listEl = document.getElementById('historyList');
       listEl.innerHTML = '';
 
-      history.forEach(h => {
+      history.forEach((h, idx) => {
         const div = document.createElement('div');
         div.className = 'history-item';
-        div.innerHTML = `<span class="hist-cat" style="color:${h.color}">${h.cat}</span><a class="hist-topic" href="${h.url}" target="_blank" rel="noopener noreferrer">${h.topic}</a>`;
+        div.innerHTML = `<span class="hist-cat" style="color:${h.catObj.color}">${h.catObj.category}</span><span class="hist-topic" data-idx="${idx}">${h.topicObj.title}</span><a class="hist-link" href="${BASE_URL + h.topicObj.url}" target="_blank" rel="noopener noreferrer">↗</a>`;
         listEl.appendChild(div);
+      });
+
+      listEl.querySelectorAll('.hist-topic').forEach(el => {
+        el.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          const h = history[idx];
+          if (!h) return;
+          document.getElementById('categoryValue').textContent = h.catObj.category;
+          document.getElementById('topicValue').textContent = h.topicObj.title;
+          document.getElementById('categoryReel').classList.remove('spinning');
+          document.getElementById('categoryReel').classList.add('locked');
+          document.getElementById('topicReel').classList.remove('spinning');
+          document.getElementById('topicReel').classList.add('final');
+          renderResult(h.catObj, h.topicObj);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
       });
 
       histEl.style.display = 'block';
