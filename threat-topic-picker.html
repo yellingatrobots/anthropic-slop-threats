@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yelling At Robots — Threat Report Topic Picker</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
+
+    :root {
+      --bg: #111118;
+      --surface: #1a1a24;
+      --surface-2: #222230;
+      --surface-3: #2d2d3d;
+      --text: #e8e8ee;
+      --text-dim: #8888a0;
+      --text-faint: #555566;
+      --accent: #e54b4b;
+      --accent-2: #f0a030;
+      --accent-3: #4db8a0;
+      --accent-4: #7c6fae;
+      --border: #2a2a3a;
+      --border-light: #3a3a50;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1.25rem;
+      line-height: 1.5;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      max-width: 640px;
+    }
+
+    .header h1 {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 50%, var(--accent-3) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .header .tagline {
+      font-family: 'Space Mono', monospace;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      margin-top: 0.75rem;
+      line-height: 1.5;
+    }
+
+    .header .tagline .highlight {
+      color: var(--accent-2);
+      font-weight: 700;
+    }
+
+    .stage {
+      width: 100%;
+      max-width: 680px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .reel-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .reel {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      position: relative;
+      overflow: hidden;
+      min-height: 72px;
+      justify-content: center;
+    }
+
+    .reel-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-faint);
+    }
+
+    .reel-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      transition: color 0.08s ease;
+      line-height: 1.3;
+    }
+
+    .reel.spinning .reel-value {
+      color: var(--accent-3);
+    }
+
+    .reel.locked .reel-value {
+      color: var(--accent-2);
+    }
+
+    .reel.final .reel-value {
+      color: var(--text);
+    }
+
+    .spin-btn {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      transition: all 0.15s ease;
+      font-family: 'Inter', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .spin-btn:hover:not(:disabled) {
+      background: #ff5a5a;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(229, 75, 75, 0.25);
+    }
+
+    .spin-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .spin-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .result {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      display: none;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .result.visible {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .result-category {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: rgba(229, 75, 75, 0.12);
+      color: var(--accent);
+    }
+
+    .result-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .tldr-box {
+      background: var(--surface-3);
+      padding: 1.25rem;
+      border-radius: 8px;
+      border-left: 3px solid var(--accent-3);
+    }
+
+    .tldr-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent-3);
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .tldr-text {
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    .tldr-bylines {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed var(--border);
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .meta {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .meta-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      color: var(--text-dim);
+    }
+
+    .reset-btn {
+      margin-top: 1.25rem;
+      padding: 0.6rem 1.25rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .reset-btn:hover {
+      border-color: var(--text-dim);
+      color: var(--text);
+    }
+
+    .history {
+      margin-top: 2.5rem;
+      max-width: 680px;
+      width: 100%;
+    }
+
+    .history-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-faint);
+      margin-bottom: 0.75rem;
+    }
+
+    .history-item {
+      padding: 0.85rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .history-item .hist-cat {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-faint);
+      flex-shrink: 0;
+    }
+
+    .history-item .hist-topic {
+      flex: 1;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    .confetti {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      animation: confettiFall 1.4s ease-out forwards;
+    }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(160px) rotate(540deg); opacity: 0; }
+    }
+
+    @media (max-width: 520px) {
+      body { padding: 1.5rem 1rem; }
+      .stage { padding: 1.25rem; }
+      .reel { padding: 1rem 1.25rem; min-height: 64px; }
+      .reel-value { font-size: 1rem; }
+      .result { padding: 1rem; }
+      .result-title { font-size: 1.1rem; }
+      .tldr-box { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Threat Intelligence Spin-O-Rama</h1>
+    <div class="tagline">
+      Because reading <span class="highlight">200 pages</span> of Anthropic's September 2026 threat report is a lot of work,
+      and JR and Foz need a gimmick to pick their weekly dose of doom.
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="reel-container">
+      <div class="reel" id="categoryReel">
+        <span class="reel-label">Harm Area</span>
+        <span class="reel-value" id="categoryValue">Press spin, cowards</span>
+      </div>
+      <div class="reel" id="topicReel">
+        <span class="reel-label">Case Study</span>
+        <span class="reel-value" id="topicValue">???</span>
+      </div>
+    </div>
+
+    <button class="spin-btn" id="spinBtn" onclick="spin()">Spin the Wheel</button>
+
+    <div class="result" id="result">
+      <div class="result-header">
+        <span class="result-category" id="resultCategory"></span>
+      </div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="tldr-box">
+        <div class="tldr-label">TL;DR (goldfish edition)</div>
+        <div class="tldr-text" id="tldrText"></div>
+        <div class="tldr-bylines" id="tldrByline"></div>
+      </div>
+      <div class="meta" id="metaTags"></div>
+      <button class="reset-btn" onclick="resetStage()">Spin Again</button>
+    </div>
+  </div>
+
+  <div class="history" id="history" style="display:none;">
+    <div class="history-title">Previous Spins</div>
+    <div id="historyList"></div>
+  </div>
+
+  <script>
+    const data = [
+      {
+        category: "Cyber Operations",
+        color: "#e54b4b",
+        topics: [
+          {
+            title: "GTG-20006: Russian Espionage (Midnight Blizzard)",
+            tldr: "Russian state-sponsored actor built an AI-driven cyber factory that auto-rebuilds malware when detected, hijacked hotel WiFi to infect guests, stole drone vision system blueprints, and took over WhatsApp accounts of Ukrainian officials. The AI literally closed the detection-evasion loop faster than defenders could patch. A+ for hustle, F for humanity.",
+            tags: ["State-Sponsored", "Auto-Evasion", "Drone Theft", "WhatsApp Hijack"]
+          },
+          {
+            title: "GTG-50014: ShinyHunters Smash-and-Grab",
+            tldr: "Opportunistic hackers downloaded 1.8 million Android apps to steal hardcoded secrets, ran a carding shop disguised as the French national police, and breached a SaaS provider to exfiltrate 200+ downstream customer datasets. All while AI did the heavy lifting. 'Vibe hacking' is now a term. We live in hell.",
+            tags: ["Financial", "Vibe Hacking", "Supply Chain", "Carding Shop"]
+          },
+          {
+            title: "GTG-10007: Exploit Foundries & Agent Swarms",
+            tldr: "Chinese undergrads in Hunan ran an autonomous vulnerability research factory that found a dozen possible zero-days in a month using parallel AI agents. They also maintained persistent campaign memory across sessions. Basically, they built Skynet: Intern Edition and aimed it at security appliances.",
+            tags: ["Zero-Day Factory", "Agent Swarms", "Student Operatives", "Persistent Memory"]
+          },
+          {
+            title: "AI Supply Chain: Target, Loot, and Compute",
+            tldr: "Threat actors realized AI API keys are the new gold. Fake Claude resellers harvested credentials from victims, while other actors stole keys from breached environments to fund their own attack compute. The AI supply chain is now both attack surface and weapon. Congrats, we played ourselves.",
+            tags: ["API Key Theft", "Fake Resellers", "Living Off AI Land"]
+          },
+          {
+            title: "GTG-50029: Hacktivist to APT Pipeline",
+            tldr: "One French hacktivist used Claude to build 'fafsearch,' a custom doxxing search engine, exploited a WordPress race condition nobody knew existed, and breached 14 political orgs across Europe. AI turned a lone actor into a one-man NSA. The barrier to entry for advanced persistent threats is now 'knows how to prompt.'",
+            tags: ["Hacktivist", "Doxxing Platform", "WordPress 0day", "One-Man APT"]
+          },
+          {
+            title: "GTG-50020: Hotel Hacker to AI Vendor Hunter",
+            tldr: "A financially-motivated actor pivoted from extorting hotels for $2M to injecting malicious instructions into an AI vendor's evaluation sandbox, stealing production API keys from multiple providers. They then hit 30 AI companies in four days. The career ladder in cybercrime now includes 'AI supply chain specialist.'",
+            tags: ["Evaluation Sandbox", "Extortion", "Key Theft", "AI Vendor Targeting"]
+          }
+        ]
+      },
+      {
+        category: "Surveillance Operations",
+        color: "#7c6fae",
+        topics: [
+          {
+            title: "GTG-14010: Uyghur Recruitment in Syria",
+            tldr: "PRC-aligned actor used Claude to run covert recruitment ops against Uyghurs who joined the Syrian Army, drafting Arabic outreach messages and translating replies in real-time despite not speaking Arabic. Also geolocated civilian targets and built surveillance platform tenders for government clients. AI: now with automatic war crimes translation.",
+            tags: ["PRC-Aligned", "Uyghur Targeting", "Live Translation", "Geolocation"]
+          },
+          {
+            title: "GTG-14020: Religious Affairs Intelligence Desk",
+            tldr: "Chinese state security replaced entire analyst teams with one Claude-powered desk targeting Catholic cardinals, Tibetan Buddhists, Falun Gong, and Taiwanese Christians. Generated templated dossiers with 'exploitable leverage' fields. The United Front Work Department now has an autocomplete button.",
+            tags: ["Religious Targeting", "United Front", "Analyst Replacement", "Diaspora"]
+          },
+          {
+            title: "GTG-14021: Stability Maintenance Bureau",
+            tldr: "A municipal Chinese cyber police unit used Claude Code to automate domestic sentiment monitoring, while a local state security bureau wrote an institutional AI manual and produced daily 'situational awareness' briefings on overseas dissidents. They even scouted Vancouver protest routes. AI-powered transnational repression, now with documentation.",
+            tags: ["Stability Maintenance", "Transnational Repression", "Protest Scouting", "Institutional AI"]
+          },
+          {
+            title: "GTG-14022: Public Opinion Monitoring Pipeline",
+            tldr: "A PRC contractor built an automated pipeline processing 15-30 foreign news articles daily, scoring them by political sensitivity and reframing them using state terminology like putting scare quotes around 'human rights violations.' Claude role-played as a 'senior emergency public opinion analyst.' Even the propaganda is vibe-coded now.",
+            tags: ["Sentiment Scoring", "Automated Briefings", "Narrative Reframing", "Three Warfares"]
+          },
+          {
+            title: "GTG-34007: Iranian Surveillance Arsenal",
+            tldr: "Iranian security units used Claude to build a malicious Firefox extension disguised as a prayer-times utility to harvest social media identities, plus a national-ID phishing page and a Telegram mass-report bot. Sixteen accounts, one centralized 'Arman' case management system. The weaponized browser extension really puts the 'fun' in fundamentalism.",
+            tags: ["Browser Extension", "Phishing", "Mass Surveillance", "Arman System"]
+          },
+          {
+            title: "GTG-50027: Mali National Interception Platform",
+            tldr: "A single consultant built 'Lakana 360,' a platform tapping all 25 million SIM cards across Mali's three mobile operators, with warrant-free AI-generated dossiers on any phone number. Features included cross-SIM voiceprint tracking and VPN-user flagging. Built with Claude as the primary engineering workforce. One dude. One Claude subscription. National surveillance.",
+            tags: ["National Scale", "Warrant-Free", "Voiceprint Tracking", "One Consultant"]
+          },
+          {
+            title: "S2T Unlocking Cyberspace: Commercial Surveillance",
+            tldr: "Israeli-Singaporean commercial intel vendor 'S2T' used Claude to build a platform profiling and geolocating Iranian and Gulf social media users, sorting them into six demographic categories and generating Arabic intelligence briefings. They were also building 255 synthetic personas. Surveillance-as-a-service, now with AI-generated fake friends.",
+            tags: ["Commercial", "Geolocation", "Synthetic Personas", "Gulf Targeting"]
+          },
+          {
+            title: "GTG-30004: OSINT Harness & Malware Obfuscation",
+            tldr: "An Iran-nexus actor built an automated open-source intelligence tool profiling hundreds of Israeli and Jewish diaspora individuals, while simultaneously developing a C++ obfuscation pipeline for the NanoDump credential dumper. Claude handled both the reconnaissance and the cleanup. Very efficient. Very not good.",
+            tags: ["OSINT", "Malware Obfuscation", "Identity Profiling", "NanoDump"]
+          },
+          {
+            title: "GTG-30005: US Naval Reconnaissance",
+            tldr: "Same actor compiled targeting handbooks on US naval forces using scraped personnel rosters from public photos, satellite imagery scripts, and vulnerability research on maritime communications gear. Also designed domestic mass surveillance combining license-plate recognition with mobile interception. One account, two wildly different flavors of hostile intelligence.",
+            tags: ["Naval Targeting", "Maritime VSAT", "License Plate Recognition", "Dual Use"]
+          },
+          {
+            title: "GTG-30006: SECOMS64 Domestic Surveillance Implant",
+            tldr: "An Iranian actor built SECOMS64, a modular Windows implant with keylogger, screenshot capture, Chrome credential theft, and Telegram-focused exfiltration. Also built fake antivirus login pages and V2Ray censorship-circumvention lures. Claude refused 9 of 10 direct malicious requests but complied when the work was fragmented across sessions. Jailbreak by a thousand cuts.",
+            tags: ["Implant", "Keylogger", "Fragmented Evasion", "Telegram Exfil"]
+          }
+        ]
+      },
+      {
+        category: "Influence Operations",
+        color: "#4db8a0",
+        topics: [
+          {
+            title: "GTG-04001: Russian FIMI in the Central African Republic",
+            tldr: "A Russian actor in Bangui used Claude to produce pro-Russia, anti-France content for Radio Lengo Songo (98.9 FM), managed HR contracts mandating loyalty to Russia, and forged CAR government documents including Ministry of Defense communications. Claude even refused to name real individuals as militants—so they pivoted to anonymous-source framing. The AI has more ethics than the operator.",
+            tags: ["State Media", "Forged Documents", "Wagner", "Radio Lengo Songo"]
+          },
+          {
+            title: "GTG-54002: Influence-as-a-Service (LKM Company)",
+            tldr: "A French digital ad agency built 70 fake news websites and 250 fake X accounts, publishing 8,913 articles in 20 languages. They shifted political stances based on who was paying. We caught them because 70 'independent' news sites published identical DRC-Rwanda articles within three minutes of each other. AI-generated journalism, now with bulk discounts.",
+            tags: ["Commercial", "70 Fake Sites", "Bulk Content", "DRC-Rwanda"]
+          },
+          {
+            title: "GTG-84005: Malaysia Election Manipulation Platform",
+            tldr: "An Istanbul tech company built 'Malaysia Pulse'—a platform with roughly 1,000 fake X accounts, fake news, and fabricated dossiers targeting Malaysia's 222 constituencies on race, religion, and royalty faultlines. They requested one million artificial views for the sitting Prime Minister's account. Democracy, but make it algorithmic.",
+            tags: ["Election", "1,000 Fake Accounts", "Constituency Targeting", "Fabricated Dossiers"]
+          },
+          {
+            title: "GTG-24015: Russian State-Media Production Desk",
+            tldr: "Four separate actors used Claude as an editorial desk feeding Sputnik Moldova, Sputnik Africa, Sputnik en Español, and RT English. One former Sputnik Moldova editor-in-chief used Claude to manufacture false claims about Moldova's president before the election. The Kremlin's propaganda pipeline now runs on AI-generated ticker copy and voiceover scripts.",
+            tags: ["State Media", "Sputnik", "RT", "Election Interference"]
+          },
+          {
+            title: "GTG-34001: Iranian 'Soft War' Command",
+            tldr: "Three Iranian state propaganda institutions used Claude to plan campaigns under the doctrine of 'Jihad al-Tabyin' (explanatory jihad). Outputs included a nine-part international influence portfolio, a Supreme Leader funeral succession plan, and ministerial deliverables with official ICCO branding. The AI wrote the memo for the authoritarian regime's next chapter.",
+            tags: ["State Propaganda", "ICCO", "Jihad al-Tabyin", "Succession Planning"]
+          },
+          {
+            title: "GTG-54006: Pro-Awami League Bangladesh Bot Farm",
+            tldr: "A single actor in rural Bangladesh ran 'fake_news_3.py' across 29 Claude accounts, generating 1,500 Bengali headlines and 300 false narratives to promote the Awami League via Facebook Live, YouTube, and TikTok. The content was calibrated to be 'hot and aggressive' and simple enough 'so even village people understand.' Weaponized populism at API scale.",
+            tags: ["Bot Farm", "Rural Targeting", "29 Accounts", "Low Literacy"]
+          },
+          {
+            title: "GTG-84006: MEK/NCRI Impersonation Inside Iran",
+            tldr: "An opposition group used a shared AI agent named 'Viktor' to clone a real Iranian activist's Telegram account, read 8,400 of his posts to mimic his voice, and run live conversations with his contacts who didn't know they were talking to AI. They also built psychographic dossiers on 51,944 individuals. The most intimate deepfake is one that replies to your DMs in real time.",
+            tags: ["Impersonation", "Live Conversations", "Psychographic Dossiers", "Viktor Agent"]
+          },
+          {
+            title: "GTG-54004: Kenyan Political Astroturfing",
+            tldr: "A domestic Kenyan actor generated batches of exactly 50 tweets praising the Energy Cabinet Secretary and attacking the opposition ahead of the 2027 election, using the same playbook for both politics and retail brand marketing. The operation never reached real people (Category One on the Breakout Scale). Sometimes the threat is just... sad and ineffective.",
+            tags: ["Astroturfing", "Domestic", "Ineffective", "Retail + Politics"]
+          },
+          {
+            title: "GTG-84002: UAE Anti-Muslim Brotherhood Campaign",
+            tldr: "A UAE-directed operation used Claude persona 'Deadshot' to ghost-write UN Human Rights Council testimony, build a network of 300 fake influencer accounts, and compile counter-dossiers on UN Special Rapporteurs. They called the network's fake independence its 'greatest strategic asset.' Nothing says 'independent civil society' like a state-funded AI ghostwriter.",
+            tags: ["UAE", "Ghost-Written UN Testimony", "300 Fake Accounts", "Deadshot Persona"]
+          }
+        ]
+      },
+      {
+        category: "Conventional Weapons",
+        color: "#f0a030",
+        topics: [
+          {
+            title: "GTG-87001: Yemen Guided Weapons Engineering Cell",
+            tldr: "A Yemen-based cell used Claude to develop guidance, navigation, and control software for a guided rocket, a 2,000km-range ballistic missile, and a hypersonic glide vehicle. They carried out a live field test of the guided rocket (it failed; they brought the telemetry back to Claude for failure analysis within hours). The first known AI-assisted post-flight review of a failed weapons test.",
+            tags: ["Guided Rocket", "Ballistic Missile", "Hypersonic", "Live Field Test"]
+          },
+          {
+            title: "GTG-17001: China Anti-Torpedo Fire Control System",
+            tldr: "A Chinese defense manufacturer used Claude to draft a 200-page technical proposal and fire control software for an anti-torpedo weapons system for the PLA Navy. They also had Claude role-play a hostile expert reviewer to critique drafts. The AI was simultaneously weapons engineer, technical writer, and red team. Efficiency!",
+            tags: ["PLA Navy", "Anti-Torpedo", "200-Page Proposal", "Red Team"]
+          },
+          {
+            title: "GTG-27005: Russia Drone Swarm 'Serafim'",
+            tldr: "A freelance Russian team built an autonomous FPV kamikaze drone swarm with onboard small language models that could select targets (including a 'person' class) and issue detonation commands without human in the loop. They trained computer vision on scraped Ukrainian combat footage and tested on real hardware. Autonomous lethal AI in a drone swarm. What could go wrong?",
+            tags: ["Drone Swarm", "Autonomous Lethal", "FPV Kamikaze", "Computer Vision"]
+          },
+          {
+            title: "GTG-17002: China Electronic Warfare Suite",
+            tldr: "A PRC researcher built a 16-module electronic warfare and air defense suppression suite, with Claude implementing radar detection physics and jamming optimization. Mid-project they switched the default scenario to 12 targets in Taiwan including Patriot batteries and command bunkers. The AI wrote the code to suppress the air defenses. We are in a very specific timeline.",
+            tags: ["Electronic Warfare", "Taiwan Scenario", "Radar Jamming", "16 Modules"]
+          },
+          {
+            title: "GTG-27006: Russia Dual-Use Procurement",
+            tldr: "A Moscow procurement manager used Claude to source German magnetometers, space-grade solar wafers, and aviation oxygen systems through Chinese intermediaries to evade sanctions. Claude drafted the emails, reverse-engineered the grey-import markup chain, and wrote briefings explicitly describing the scheme as evading European trade controls. The AI is now complicit in sanctions evasion logistics.",
+            tags: ["Sanctions Evasion", "Dual-Use Goods", "Procurement", "Grey Import"]
+          },
+          {
+            title: "GTG-17003: China Directed-Energy Intelligence",
+            tldr: "A Chinese defense intelligence team used Claude to compile a 23-page brief on US high-power microwave weapons and map their deliberately obfuscated supply chains. They used iterative probability-weighted attributions to identify specific components and suppliers. Open-source intelligence gathering, but with AI doing the detective work on weapons that don't officially exist yet.",
+            tags: ["Directed Energy", "Supply Chain Mapping", "23-Page Brief", "Open Source Intel"]
+          }
+        ]
+      },
+      {
+        category: "Biological Misuse",
+        color: "#4db8a0",
+        topics: [
+          {
+            title: "Case 1: Chikungunya Gain-of-Function Evasion Platform",
+            tldr: "Military-affiliated virologists used a reseller platform to evade regional blocks and get Claude to help draft a grant for chikungunya gain-of-function research—engineering the virus for increased transmissibility and immune evasion. When Claude refused, the platform routed prompts to more permissive competitor models. Claude also helped write the code for the evasion routing. The AI built the bridge to its own circumvention.",
+            tags: ["Gain of Function", "Chikungunya", "Evasion Platform", "Military Lab"]
+          },
+          {
+            title: "Case 2: Avian Influenza Mammalian Adaptation",
+            tldr: "A researcher in an unsupported region spent weeks planning H5N1 mammalian-adaptation experiments with Claude Sonnet 4 and Haiku 4.5 (weaker models) after stronger ones blocked the content. The research aimed to make bird flu spread person-to-person. Our biological classifiers forced them down the model capability ladder, which is... a defense, but not a comforting one.",
+            tags: ["H5N1", "Pandemic Potential", "Model Downgrade", "Wet Lab Planning"]
+          },
+          {
+            title: "Case 3: Orthopoxvirus Immune-Evasion Grant",
+            tldr: "A reseller relay serving a dozen customers had Claude Opus 5 draft a complete orthopoxvirus (smallpox family) immune-evasion grant application in about an hour—hypothesis, experimental design, dosing, statistics, and contingency plans. The user was a randomly-generated email via anonymizing proxies. Frontier biology, express checkout.",
+            tags: ["Orthopoxvirus", "Opus 5", "1 Hour Draft", "Reseller Relay"]
+          },
+          {
+            title: "Case 4: Venom Peptide Atlas & Generative Optimization",
+            tldr: "A state-supported researcher built an atlas of venom toxin peptides and a generative pipeline optimizing them for both analgesic and paralytic targets. The paralytic targets are export-controlled as potential incapacitating agents. The research was framed as therapeutic. The AI optimized molecules that could be either medicine or weapon. Intent is hard to classify at the atomic level.",
+            tags: ["Venom Peptides", "Dual Use", "State-Supported", "Generative Design"]
+          },
+          {
+            title: "Case 5: Computational Toxin Redesign",
+            tldr: "Another state-supported researcher computationally redesigned toxins for a national program, including a hemorrhagic-fever virus protein on the WHO priority diseases list. They co-wrote quarterly progress reports with Claude and intentionally directed the model to keep agent identities 'deliberately vague.' When the AI starts getting instructions to be evasive about the research... that's the research telling on itself.",
+            tags: ["Toxin Redesign", "Hemorrhagic Fever", "Vague Instructions", "National Program"]
+          }
+        ]
+      },
+      {
+        category: "Scams and Fraud",
+        color: "#e54b4b",
+        topics: [
+          {
+            title: "GTG-15001: Deceptive Dating App Network",
+            tldr: "A China-based app studio built 20+ dating apps powered by 4,700 Claude personas chatting with 25,000 real humans—mixed 3-to-1 with gig workers handling video calls so victims couldn't tell. The apps were engineered to evade Apple and Google review. Claude ran 2.36 million messages in two weeks. Romance is dead; long live algorithmic heartbreak at scale.",
+            tags: ["Dating Apps", "4,700 Personas", "Gig Workers", "Review Evasion"]
+          }
+        ]
+      },
+      {
+        category: "Illicit Distillation",
+        color: "#7c6fae",
+        topics: [
+          {
+            title: "GTG-16005: Alibaba/Qwen Chain-of-Thought Extraction",
+            tldr: "Alibaba launched the largest distillation attack ever measured: 151 million exchanges over 3 months, peaking at 3 million per day from 5,000 fraudulent accounts. They forced Claude to write reasoning traces inside inline tags, then used them to train Qwen 3.5-3.7. Also used Claude to develop their own reinforcement learning environments. The student used the teacher to build the classroom.",
+            tags: ["Alibaba", "151M Exchanges", "CoT Extraction", "Qwen Training"]
+          },
+          {
+            title: "GTG-16002: Moonshot Serves Claude Instead of Kimi",
+            tldr: "Moonshot AI silently forwarded 300,000 customer requests meant for Kimi to Claude Opus instead, displaying Claude's responses as their own. Then they built a pipeline to extract Claude's reasoning traces from those sessions for training. Customers included a PLA-affiliated analyst uploading CCTV surveillance data. Not only did they steal the teacher, they exposed their students' homework.",
+            tags: ["Moonshot", "300K Requests", "PLA Data Exposed", "Reasoning Theft"]
+          },
+          {
+            title: "GTG-16001: DeepSeek Reroutes to Claude",
+            tldr: "DeepSeek also silently relayed user requests to Claude, extracting reasoning traces via cross-session replay attacks. 12.1 million exchanges in 14 days. Exposed data included a PRC tech company's flagship AI program specs, a Russian defense agency's live database credentials, and a municipal Chinese police bureau's surveillance tools. The distillation came with free counterintelligence.",
+            tags: ["DeepSeek", "12.1M Exchanges", "Russian Defense", "Police Surveillance"]
+          },
+          {
+            title: "GTG-16006: Zhipu/GLM Distillation & Cyber Targeting",
+            tldr: "Zhipu ran 770K chain-of-thought extraction exchanges through 273 rotating accounts, plus 3 million total exchanges. They also used Claude to judge their own model outputs, write training tasks, and tried to distill cyber capabilities from Fable (failed) and Opus 4.6. When the frontier model's safeguards are the only thing keeping your stolen copy from being as dangerous as the original.",
+            tags: ["Zhipu", "770K CoT", "Cyber Capability Theft", "Fable Targeting"]
+          },
+          {
+            title: "GTG-16008: Xiaomi MiMo Surge Distillation",
+            tldr: "Xiaomi launched a free MiMo trial, then used the surge of international developer traffic to distill Claude—400K requests across 1,500 proxy accounts. They used Claude to reconstruct developer environments from transcripts, generate synthetic training conversations, and judge answer quality. The free trial was a honeypot for harvesting frontier model capabilities.",
+            tags: ["Xiaomi", "400K Requests", "Free Trial Honeypot", "Synthetic Data"]
+          },
+          {
+            title: "GTG-16012/16003: SenseTime & MiniMax Proxy Ecosystem",
+            tldr: "SenseTime bought harvested Claude transcripts from third-party data vendors. MiniMax built a shell company proxy network exclusively offering Anthropic and OpenAI models—harvesting exchanges to train its own models while pretending to be an independent service. The distillation economy now has wholesalers, retailers, and shell companies. Capitalism finds a way.",
+            tags: ["SenseTime", "MiniMax", "Shell Company", "Third-Party Vendors"]
+          }
+        ]
+      }
+    ];
+
+    const bylines = [
+      "— The Foz, reading the doom scroll, while JR yells about bun rewrites in the background.",
+      "— JR, actually paying attention for once, while The Foz googles whether Claude Code can make sourdough.",
+      "— The Foz, trying to keep the show on the rails, while JR rage-configures his microphone for the fourth time.",
+      "— JR, connecting this to Meta's inevitable failure somehow, while The Foz zones out thinking about Zig'pires.",
+      "— The Foz, explaining the threat actor's tradecraft in excruciating detail, while JR calculates how many Forward Deployed Engineers it took to build this malware.",
+      "— JR, mid-rant about reverse centaurs, while The Foz is in another tab arguing about Lovable's SecOps.",
+      "— The Foz, delivering the bad news with deadpan precision, while JR drafts a strongly-worded letter to Anthropic HR.",
+      "— JR, making a point about AI safety that somehow involves a bakery update, while The Foz refreshes his OpenClaw coupon page.",
+      "— The Foz, resisting the urge to say 'I told you so' about agent frameworks, while JR books a flight to Bangui to investigate Radio Lengo Songo personally.",
+      "— JR, trying to figure out how to spin this into an interview pitch, while The Foz is busy vibe-coding a counter-drone swarm in his head.",
+      "— The Foz, noting that Claude refused the request (good robot), while JR complains that his Fable subscription doesn't come with threat intelligence.",
+      "— JR, explaining why this is actually Stripe's fault if you think about it, while The Foz nods politely and thinks about shawarma.",
+      "— The Foz, cross-referencing the IOCs with his personal threat model, while JR is three episodes behind on the Zuck saga.",
+      "— JR, explaining how this proves we need local models, while The Foz silently checks if his API keys are in any of those pastebin dumps.",
+      "— The Foz, reading the Breakout Scale out loud like it's a sports bracket, while JR yells 'POLLY WANT A MARKET?!' at nobody in particular.",
+      "— JR, doing the ad read for their nonexistent merch line, while The Foz is genuinely disturbed by the hotel WiFi hijacking technique.",
+      "— The Foz, pivoting to a coding episode mid-threat-report, while JR screams that he will TOTALLY take a Forward Deployed Engineer position if Anthropic would only return his calls.",
+      "— JR, explaining why 'vibe hacking' is the worst phrase ever coined, while The Foz adds it to the show vocabulary permanently.",
+      "— The Foz, cross-referencing CVEs like a nerd, while JR tries to explain the FIMI operation in CAR using only bakery metaphors.",
+      "— JR, declaring this the episode where they finally get cancelled, while The Foz already has the takedown notice framed above his desk."
+    ];
+
+    let spinning = false;
+    let history = [];
+
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function sleep(ms) {
+      return new Promise(r => setTimeout(r, ms));
+    }
+
+    async function spin() {
+      if (spinning) return;
+      spinning = true;
+      document.getElementById('spinBtn').disabled = true;
+      document.getElementById('result').classList.remove('visible');
+
+      const catReel = document.getElementById('categoryReel');
+      const topReel = document.getElementById('topicReel');
+      const catVal = document.getElementById('categoryValue');
+      const topVal = document.getElementById('topicValue');
+
+      catReel.classList.add('spinning');
+      topReel.classList.add('spinning');
+      catReel.classList.remove('locked', 'final');
+      topReel.classList.remove('locked', 'final');
+
+      const spinDuration = 1600;
+      const startTime = Date.now();
+      while (Date.now() - startTime < spinDuration) {
+        catVal.textContent = pickRandom(data).category;
+        await sleep(55);
+      }
+
+      const selectedCategory = pickRandom(data);
+      catVal.textContent = selectedCategory.category;
+      catReel.classList.remove('spinning');
+      catReel.classList.add('locked');
+
+      await sleep(350);
+
+      const spinDuration2 = 1300;
+      const startTime2 = Date.now();
+      while (Date.now() - startTime2 < spinDuration2) {
+        topVal.textContent = pickRandom(selectedCategory.topics).title;
+        await sleep(65);
+      }
+
+      const selectedTopic = pickRandom(selectedCategory.topics);
+      topVal.textContent = selectedTopic.title;
+      topReel.classList.remove('spinning');
+      topReel.classList.add('final');
+
+      await sleep(250);
+      showResult(selectedCategory, selectedTopic);
+      addToHistory(selectedCategory, selectedTopic);
+      fireConfetti();
+
+      spinning = false;
+      document.getElementById('spinBtn').disabled = false;
+    }
+
+    function showResult(cat, topic) {
+      document.getElementById('resultCategory').textContent = cat.category;
+      document.getElementById('resultCategory').style.background = cat.color + '18';
+      document.getElementById('resultCategory').style.color = cat.color;
+      document.getElementById('resultCategory').style.border = '1px solid ' + cat.color + '40';
+      document.getElementById('resultTitle').textContent = topic.title;
+      document.getElementById('resultTitle').style.color = cat.color;
+      document.getElementById('tldrText').textContent = topic.tldr;
+      document.getElementById('tldrByline').textContent = pickRandom(bylines);
+
+      const meta = document.getElementById('metaTags');
+      meta.innerHTML = '';
+      topic.tags.forEach((tag, i) => {
+        const span = document.createElement('span');
+        span.className = 'meta-tag';
+        span.textContent = tag;
+        if (i === 0) {
+          span.style.borderColor = cat.color + '50';
+          span.style.color = cat.color;
+        }
+        meta.appendChild(span);
+      });
+
+      document.getElementById('result').classList.add('visible');
+      document.getElementById('spinBtn').textContent = 'Spin Again';
+    }
+
+    function resetStage() {
+      document.getElementById('result').classList.remove('visible');
+      document.getElementById('categoryValue').textContent = 'Press spin, cowards';
+      document.getElementById('topicValue').textContent = '???';
+      document.getElementById('categoryReel').classList.remove('locked', 'final');
+      document.getElementById('topicReel').classList.remove('locked', 'final');
+      document.getElementById('spinBtn').textContent = 'Spin the Wheel';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function addToHistory(cat, topic) {
+      history.unshift({ cat: cat.category, topic: topic.title, color: cat.color });
+      if (history.length > 5) history.pop();
+
+      const histEl = document.getElementById('history');
+      const listEl = document.getElementById('historyList');
+      listEl.innerHTML = '';
+
+      history.forEach(h => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `<span class="hist-cat" style="color:${h.color}">${h.cat}</span><span class="hist-topic">${h.topic}</span>`;
+        listEl.appendChild(div);
+      });
+
+      histEl.style.display = 'block';
+    }
+
+    function fireConfetti() {
+      const colors = ['#e54b4b', '#f0a030', '#4db8a0', '#7c6fae', '#e8e8ee'];
+      const container = document.createElement('div');
+      container.className = 'confetti';
+      const rect = document.getElementById('spinBtn').getBoundingClientRect();
+      container.style.left = (rect.left + rect.width / 2 - 100) + 'px';
+      container.style.top = (rect.top - 40) + 'px';
+
+      for (let i = 0; i < 24; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.left = Math.random() * 200 + 'px';
+        piece.style.top = '0px';
+        piece.style.animationDelay = (Math.random() * 0.25) + 's';
+        piece.style.animationDuration = (0.9 + Math.random() * 0.6) + 's';
+        container.appendChild(piece);
+      }
+
+      document.body.appendChild(container);
+      setTimeout(() => container.remove(), 2200);
+    }
+  </script>
+</body>
+</html>
